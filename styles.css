@@ -1061,7 +1061,11 @@ input[type="range"] {
     
     .orthographic-views.mobile {
         grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
         grid-gap: 6px;
+        height: 280px;
+        overflow-y: auto;
+        margin-bottom: 15px;
     }
     
     .shape-buttons {

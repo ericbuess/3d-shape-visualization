@@ -160,6 +160,57 @@ function setupMobileControls() {
             if (!isActive) {
                 panel.classList.add('active');
                 icon.classList.add('active');
+                
+                // If this is the view panel, trigger resize on mobile view renderers
+                if (panel.id === 'view-panel') {
+                    // Add a small delay to ensure the panel is fully visible first
+                    setTimeout(() => {
+                        if (window.mobileTopRenderer) {
+                            const mobileTopContainer = document.getElementById('mobile-top-view-canvas');
+                            if (mobileTopContainer) {
+                                window.mobileTopRenderer.setSize(mobileTopContainer.clientWidth, mobileTopContainer.clientHeight);
+                            }
+                        }
+                        
+                        if (window.mobileFrontRenderer) {
+                            const mobileFrontContainer = document.getElementById('mobile-front-view-canvas');
+                            if (mobileFrontContainer) {
+                                window.mobileFrontRenderer.setSize(mobileFrontContainer.clientWidth, mobileFrontContainer.clientHeight);
+                            }
+                        }
+                        
+                        if (window.mobileRightRenderer) {
+                            const mobileRightContainer = document.getElementById('mobile-right-view-canvas');
+                            if (mobileRightContainer) {
+                                window.mobileRightRenderer.setSize(mobileRightContainer.clientWidth, mobileRightContainer.clientHeight);
+                            }
+                        }
+                        
+                        if (window.mobileLeftRenderer) {
+                            const mobileLeftContainer = document.getElementById('mobile-left-view-canvas');
+                            if (mobileLeftContainer) {
+                                window.mobileLeftRenderer.setSize(mobileLeftContainer.clientWidth, mobileLeftContainer.clientHeight);
+                            }
+                        }
+                        
+                        // Force a re-render of the mobile views
+                        if (window.mobileTopRenderer && window.mobileTopScene && window.mobileTopCamera) {
+                            window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
+                        }
+                        
+                        if (window.mobileFrontRenderer && window.mobileFrontScene && window.mobileFrontCamera) {
+                            window.mobileFrontRenderer.render(window.mobileFrontScene, window.mobileFrontCamera);
+                        }
+                        
+                        if (window.mobileRightRenderer && window.mobileRightScene && window.mobileRightCamera) {
+                            window.mobileRightRenderer.render(window.mobileRightScene, window.mobileRightCamera);
+                        }
+                        
+                        if (window.mobileLeftRenderer && window.mobileLeftScene && window.mobileLeftCamera) {
+                            window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
+                        }
+                    }, 100);
+                }
             }
         });
     }
@@ -632,7 +683,201 @@ function initOrthographicViews() {
     leftContainer.innerHTML = ''; // Clear container
     leftContainer.appendChild(leftRenderer.domElement);
     
+    // Initialize mobile views with the same settings
+    initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ);
+    
     console.log("Orthographic views initialized successfully");
+}
+
+// Initialize mobile orthographic views
+function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
+    console.log("Initializing mobile orthographic views...");
+    
+    // Mobile top view
+    const mobileTopContainer = document.getElementById('mobile-top-view-canvas');
+    if (mobileTopContainer) {
+        window.mobileTopScene = new THREE.Scene();
+        window.mobileTopScene.background = new THREE.Color(0xf5f5f5);
+        
+        // Add lighting
+        const mobileTopLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        mobileTopLight.position.set(0, 10, 0);
+        window.mobileTopScene.add(mobileTopLight);
+        window.mobileTopScene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        
+        // Add grid to help with orientation
+        window.mobileTopScene.add(gridHelperXZ.clone());
+        
+        // Create camera
+        window.mobileTopCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
+        window.mobileTopCamera.position.set(0, 10, 0);
+        window.mobileTopCamera.lookAt(0, 0, 0);
+        
+        // Create renderer
+        window.mobileTopRenderer = new THREE.WebGLRenderer({ antialias: true });
+        window.mobileTopRenderer.setSize(mobileTopContainer.clientWidth, mobileTopContainer.clientHeight);
+        mobileTopContainer.innerHTML = ''; // Clear container
+        mobileTopContainer.appendChild(window.mobileTopRenderer.domElement);
+    }
+    
+    // Mobile front view
+    const mobileFrontContainer = document.getElementById('mobile-front-view-canvas');
+    if (mobileFrontContainer) {
+        window.mobileFrontScene = new THREE.Scene();
+        window.mobileFrontScene.background = new THREE.Color(0xf5f5f5);
+        
+        // Add lighting
+        const mobileFrontLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        mobileFrontLight.position.set(0, 0, 10);
+        window.mobileFrontScene.add(mobileFrontLight);
+        window.mobileFrontScene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        
+        // Add grid to help with orientation
+        window.mobileFrontScene.add(gridHelperXY.clone());
+        
+        // Create camera
+        window.mobileFrontCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
+        window.mobileFrontCamera.position.set(0, 0, 10);
+        window.mobileFrontCamera.lookAt(0, 0, 0);
+        
+        // Create renderer
+        window.mobileFrontRenderer = new THREE.WebGLRenderer({ antialias: true });
+        window.mobileFrontRenderer.setSize(mobileFrontContainer.clientWidth, mobileFrontContainer.clientHeight);
+        mobileFrontContainer.innerHTML = ''; // Clear container
+        mobileFrontContainer.appendChild(window.mobileFrontRenderer.domElement);
+    }
+    
+    // Mobile right view
+    const mobileRightContainer = document.getElementById('mobile-right-view-canvas');
+    if (mobileRightContainer) {
+        window.mobileRightScene = new THREE.Scene();
+        window.mobileRightScene.background = new THREE.Color(0xf5f5f5);
+        
+        // Add lighting
+        const mobileRightLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        mobileRightLight.position.set(10, 0, 0);
+        window.mobileRightScene.add(mobileRightLight);
+        window.mobileRightScene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        
+        // Add grid to help with orientation
+        window.mobileRightScene.add(gridHelperYZ.clone());
+        
+        // Create camera
+        window.mobileRightCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
+        window.mobileRightCamera.position.set(10, 0, 0);
+        window.mobileRightCamera.lookAt(0, 0, 0);
+        
+        // Create renderer
+        window.mobileRightRenderer = new THREE.WebGLRenderer({ antialias: true });
+        window.mobileRightRenderer.setSize(mobileRightContainer.clientWidth, mobileRightContainer.clientHeight);
+        mobileRightContainer.innerHTML = ''; // Clear container
+        mobileRightContainer.appendChild(window.mobileRightRenderer.domElement);
+    }
+    
+    // Mobile left view
+    const mobileLeftContainer = document.getElementById('mobile-left-view-canvas');
+    if (mobileLeftContainer) {
+        window.mobileLeftScene = new THREE.Scene();
+        window.mobileLeftScene.background = new THREE.Color(0xf5f5f5);
+        
+        // Add lighting
+        const mobileLeftLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        mobileLeftLight.position.set(-10, 0, 0);
+        window.mobileLeftScene.add(mobileLeftLight);
+        window.mobileLeftScene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        
+        // Add grid to help with orientation
+        window.mobileLeftScene.add(gridHelperYZ.clone());
+        
+        // Create camera
+        window.mobileLeftCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
+        window.mobileLeftCamera.position.set(-10, 0, 0);
+        window.mobileLeftCamera.lookAt(0, 0, 0);
+        
+        // Create renderer
+        window.mobileLeftRenderer = new THREE.WebGLRenderer({ antialias: true });
+        window.mobileLeftRenderer.setSize(mobileLeftContainer.clientWidth, mobileLeftContainer.clientHeight);
+        mobileLeftContainer.innerHTML = ''; // Clear container
+        mobileLeftContainer.appendChild(window.mobileLeftRenderer.domElement);
+    }
+    
+    // Add event listener for the panel becoming visible to handle resize
+    const viewPanel = document.getElementById('view-panel');
+    if (viewPanel) {
+        // Set up a MutationObserver to watch for class changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    if (viewPanel.classList.contains('active')) {
+                        // Panel became visible - resize and re-render mobile views after short delay
+                        setTimeout(() => resizeMobileViewRenderers(), 100);
+                    }
+                }
+            });
+        });
+        
+        // Start observing the panel for class changes
+        observer.observe(viewPanel, { attributes: true });
+    }
+    
+    console.log("Mobile orthographic views initialized successfully");
+}
+
+// Helper function to resize and re-render mobile views
+function resizeMobileViewRenderers() {
+    console.log("Resizing mobile view renderers...");
+    
+    // Handle top view
+    if (window.mobileTopRenderer) {
+        const container = document.getElementById('mobile-top-view-canvas');
+        if (container) {
+            const width = container.clientWidth || 100;
+            const height = container.clientHeight || 100;
+            window.mobileTopRenderer.setSize(width, height);
+            if (window.mobileTopScene && window.mobileTopCamera) {
+                window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
+            }
+        }
+    }
+    
+    // Handle front view
+    if (window.mobileFrontRenderer) {
+        const container = document.getElementById('mobile-front-view-canvas');
+        if (container) {
+            const width = container.clientWidth || 100;
+            const height = container.clientHeight || 100;
+            window.mobileFrontRenderer.setSize(width, height);
+            if (window.mobileFrontScene && window.mobileFrontCamera) {
+                window.mobileFrontRenderer.render(window.mobileFrontScene, window.mobileFrontCamera);
+            }
+        }
+    }
+    
+    // Handle right view
+    if (window.mobileRightRenderer) {
+        const container = document.getElementById('mobile-right-view-canvas');
+        if (container) {
+            const width = container.clientWidth || 100;
+            const height = container.clientHeight || 100;
+            window.mobileRightRenderer.setSize(width, height);
+            if (window.mobileRightScene && window.mobileRightCamera) {
+                window.mobileRightRenderer.render(window.mobileRightScene, window.mobileRightCamera);
+            }
+        }
+    }
+    
+    // Handle left view
+    if (window.mobileLeftRenderer) {
+        const container = document.getElementById('mobile-left-view-canvas');
+        if (container) {
+            const width = container.clientWidth || 100;
+            const height = container.clientHeight || 100;
+            window.mobileLeftRenderer.setSize(width, height);
+            if (window.mobileLeftScene && window.mobileLeftCamera) {
+                window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
+            }
+        }
+    }
 }
 
 // Camera position functions
@@ -2332,6 +2577,12 @@ function createShape(shapeDef) {
         if (rightScene) rightScene.add(currentShape.rightMesh);
         if (leftScene) leftScene.add(currentShape.leftMesh);
         
+        // Add the shape to mobile scenes if available
+        if (window.mobileTopScene) window.mobileTopScene.add(currentShape.topMesh.clone());
+        if (window.mobileFrontScene) window.mobileFrontScene.add(currentShape.frontMesh.clone());
+        if (window.mobileRightScene) window.mobileRightScene.add(currentShape.rightMesh.clone());
+        if (window.mobileLeftScene) window.mobileLeftScene.add(currentShape.leftMesh.clone());
+        
         // Update camera to fit the shape
         updateCamerasForShape(shapeDef);
         
@@ -2936,12 +3187,40 @@ function removeCrossSection() {
 // Clear all shapes from the scenes
 function clearShapes() {
     if (currentShape) {
+        // Clear from main scene
         mainScene.remove(currentShape.mainMesh);
         mainScene.remove(currentShape.wireframe);
-        topScene.remove(currentShape.topMesh);
-        frontScene.remove(currentShape.frontMesh);
-        rightScene.remove(currentShape.rightMesh);
-        leftScene.remove(currentShape.leftMesh);
+        
+        // Clear from desktop orthographic scenes
+        if (topScene) topScene.remove(currentShape.topMesh);
+        if (frontScene) frontScene.remove(currentShape.frontMesh);
+        if (rightScene) rightScene.remove(currentShape.rightMesh);
+        if (leftScene) leftScene.remove(currentShape.leftMesh);
+        
+        // Clear from mobile scenes if they exist
+        if (window.mobileTopScene) {
+            window.mobileTopScene.children = window.mobileTopScene.children.filter(child => {
+                return child instanceof THREE.GridHelper || child instanceof THREE.Light;
+            });
+        }
+        
+        if (window.mobileFrontScene) {
+            window.mobileFrontScene.children = window.mobileFrontScene.children.filter(child => {
+                return child instanceof THREE.GridHelper || child instanceof THREE.Light;
+            });
+        }
+        
+        if (window.mobileRightScene) {
+            window.mobileRightScene.children = window.mobileRightScene.children.filter(child => {
+                return child instanceof THREE.GridHelper || child instanceof THREE.Light;
+            });
+        }
+        
+        if (window.mobileLeftScene) {
+            window.mobileLeftScene.children = window.mobileLeftScene.children.filter(child => {
+                return child instanceof THREE.GridHelper || child instanceof THREE.Light;
+            });
+        }
     }
     
     removeCrossSection();
@@ -2963,6 +3242,7 @@ function updateCamerasForShape(shapeDef) {
     // Adjust orthographic cameras if they exist
     const viewSize = maxDimension * 1.5;
     
+    // Update desktop cameras
     if (topCamera) {
         topCamera.left = -viewSize;
         topCamera.right = viewSize;
@@ -2993,6 +3273,39 @@ function updateCamerasForShape(shapeDef) {
         leftCamera.top = viewSize;
         leftCamera.bottom = -viewSize;
         leftCamera.updateProjectionMatrix();
+    }
+    
+    // Update mobile cameras
+    if (window.mobileTopCamera) {
+        window.mobileTopCamera.left = -viewSize;
+        window.mobileTopCamera.right = viewSize;
+        window.mobileTopCamera.top = viewSize;
+        window.mobileTopCamera.bottom = -viewSize;
+        window.mobileTopCamera.updateProjectionMatrix();
+    }
+    
+    if (window.mobileFrontCamera) {
+        window.mobileFrontCamera.left = -viewSize;
+        window.mobileFrontCamera.right = viewSize;
+        window.mobileFrontCamera.top = viewSize;
+        window.mobileFrontCamera.bottom = -viewSize;
+        window.mobileFrontCamera.updateProjectionMatrix();
+    }
+    
+    if (window.mobileRightCamera) {
+        window.mobileRightCamera.left = -viewSize;
+        window.mobileRightCamera.right = viewSize;
+        window.mobileRightCamera.top = viewSize;
+        window.mobileRightCamera.bottom = -viewSize;
+        window.mobileRightCamera.updateProjectionMatrix();
+    }
+    
+    if (window.mobileLeftCamera) {
+        window.mobileLeftCamera.left = -viewSize;
+        window.mobileLeftCamera.right = viewSize;
+        window.mobileLeftCamera.top = viewSize;
+        window.mobileLeftCamera.bottom = -viewSize;
+        window.mobileLeftCamera.updateProjectionMatrix();
     }
     
     // Adjust main camera
@@ -3032,6 +3345,28 @@ function onWindowResize() {
         const leftContainer = document.getElementById('left-view-canvas');
         if (leftContainer) leftRenderer.setSize(leftContainer.clientWidth, leftContainer.clientHeight);
     }
+    
+    // Update mobile orthographic views if they exist
+    if (window.mobileTopRenderer) {
+        const mobileTopContainer = document.getElementById('mobile-top-view-canvas');
+        if (mobileTopContainer) window.mobileTopRenderer.setSize(mobileTopContainer.clientWidth, mobileTopContainer.clientHeight);
+    }
+    
+    if (window.mobileFrontRenderer) {
+        const mobileFrontContainer = document.getElementById('mobile-front-view-canvas');
+        if (mobileFrontContainer) window.mobileFrontRenderer.setSize(mobileFrontContainer.clientWidth, mobileFrontContainer.clientHeight);
+    }
+    
+    // Add mobile side and left views
+    if (window.mobileRightRenderer) {
+        const mobileRightContainer = document.getElementById('mobile-right-view-canvas');
+        if (mobileRightContainer) window.mobileRightRenderer.setSize(mobileRightContainer.clientWidth, mobileRightContainer.clientHeight);
+    }
+    
+    if (window.mobileLeftRenderer) {
+        const mobileLeftContainer = document.getElementById('mobile-left-view-canvas');
+        if (mobileLeftContainer) window.mobileLeftRenderer.setSize(mobileLeftContainer.clientWidth, mobileLeftContainer.clientHeight);
+    }
 }
 
 // Animation loop
@@ -3068,6 +3403,23 @@ function animate() {
         
         if (leftRenderer && leftScene && leftCamera) {
             leftRenderer.render(leftScene, leftCamera);
+        }
+        
+        // Render mobile orthographic views
+        if (window.mobileTopRenderer && window.mobileTopScene && window.mobileTopCamera) {
+            window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
+        }
+        
+        if (window.mobileFrontRenderer && window.mobileFrontScene && window.mobileFrontCamera) {
+            window.mobileFrontRenderer.render(window.mobileFrontScene, window.mobileFrontCamera);
+        }
+        
+        if (window.mobileRightRenderer && window.mobileRightScene && window.mobileRightCamera) {
+            window.mobileRightRenderer.render(window.mobileRightScene, window.mobileRightCamera);
+        }
+        
+        if (window.mobileLeftRenderer && window.mobileLeftScene && window.mobileLeftCamera) {
+            window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
         }
     } catch (error) {
         console.error("Error in animation loop:", error);
