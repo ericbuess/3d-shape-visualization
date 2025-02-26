@@ -573,16 +573,169 @@ function initOrthographicViews() {
         return;
     }
     
-    // Create grid helpers once
-    const gridHelper = new THREE.GridHelper(10, 10);
+    // Create grid helpers with proper visibility and spacing
+    const gridSize = 10;
+    const gridDivisions = 10;
+    const gridColor = 0x000000;
+    const gridOpacity = 0.2;
     
-    const gridHelperXZ = gridHelper.clone();
-    gridHelperXZ.rotation.x = Math.PI / 2;
+    // Create grid material
+    const gridMaterial = new THREE.LineBasicMaterial({ 
+        color: gridColor, 
+        transparent: true, 
+        opacity: gridOpacity 
+    });
     
-    const gridHelperXY = gridHelper.clone();
+    // Function to create grid lines for given plane and size
+    function createGridLines(plane, size, divisions) {
+        const step = size / divisions;
+        const halfSize = size / 2;
+        
+        const points = [];
+        
+        // Create grid lines based on plane orientation
+        if (plane === 'xy') {
+            // Vertical lines along X axis (moving in Z direction)
+            for (let i = -halfSize; i <= halfSize; i += step) {
+                points.push(
+                    new THREE.Vector3(i, -halfSize, 0),
+                    new THREE.Vector3(i, halfSize, 0)
+                );
+            }
+            
+            // Horizontal lines along Z axis (moving in X direction)
+            for (let i = -halfSize; i <= halfSize; i += step) {
+                points.push(
+                    new THREE.Vector3(-halfSize, i, 0),
+                    new THREE.Vector3(halfSize, i, 0)
+                );
+            }
+        } else if (plane === 'xz') {
+            // Create lines for XZ plane (top view)
+            // Vertical lines along X axis
+            for (let i = -halfSize; i <= halfSize; i += step) {
+                points.push(
+                    new THREE.Vector3(i, 0, -halfSize),
+                    new THREE.Vector3(i, 0, halfSize)
+                );
+            }
+            
+            // Horizontal lines along Z axis
+            for (let i = -halfSize; i <= halfSize; i += step) {
+                points.push(
+                    new THREE.Vector3(-halfSize, 0, i),
+                    new THREE.Vector3(halfSize, 0, i)
+                );
+            }
+        } else if (plane === 'yz') {
+            // Create lines for YZ plane (side view)
+            // Vertical lines along Y axis
+            for (let i = -halfSize; i <= halfSize; i += step) {
+                points.push(
+                    new THREE.Vector3(0, i, -halfSize),
+                    new THREE.Vector3(0, i, halfSize)
+                );
+            }
+            
+            // Horizontal lines along Z axis
+            for (let i = -halfSize; i <= halfSize; i += step) {
+                points.push(
+                    new THREE.Vector3(0, -halfSize, i),
+                    new THREE.Vector3(0, halfSize, i)
+                );
+            }
+        }
+        
+        // Create buffer geometry from points
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        
+        // Create lines with the grid material
+        return new THREE.LineSegments(geometry, gridMaterial.clone());
+    }
     
-    const gridHelperYZ = gridHelper.clone();
-    gridHelperYZ.rotation.z = Math.PI / 2;
+    // Create specialized grid helpers for each orientation
+    const gridHelperXZ = createGridLines('xz', gridSize, gridDivisions);
+    const gridHelperXY = createGridLines('xy', gridSize, gridDivisions);
+    const gridHelperYZ = createGridLines('yz', gridSize, gridDivisions);
+    
+    // Create axis helpers for better orientation
+    const axisLength = 5;
+    
+    function createAxisHelper(plane) {
+        const group = new THREE.Group();
+        
+        // Create materials for each axis
+        const xAxisMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+        const yAxisMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+        const zAxisMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+        
+        if (plane === 'xz') {
+            // X and Z axes for top view that extend in both directions
+            const xPoints = [
+                new THREE.Vector3(-axisLength, 0, 0),
+                new THREE.Vector3(axisLength, 0, 0)
+            ];
+            const zPoints = [
+                new THREE.Vector3(0, 0, -axisLength),
+                new THREE.Vector3(0, 0, axisLength)
+            ];
+            
+            const xGeometry = new THREE.BufferGeometry().setFromPoints(xPoints);
+            const zGeometry = new THREE.BufferGeometry().setFromPoints(zPoints);
+            
+            const xAxis = new THREE.Line(xGeometry, xAxisMaterial);
+            const zAxis = new THREE.Line(zGeometry, zAxisMaterial);
+            
+            group.add(xAxis);
+            group.add(zAxis);
+        } else if (plane === 'xy') {
+            // X and Y axes for front view that extend in both directions
+            const xPoints = [
+                new THREE.Vector3(-axisLength, 0, 0),
+                new THREE.Vector3(axisLength, 0, 0)
+            ];
+            const yPoints = [
+                new THREE.Vector3(0, -axisLength, 0),
+                new THREE.Vector3(0, axisLength, 0)
+            ];
+            
+            const xGeometry = new THREE.BufferGeometry().setFromPoints(xPoints);
+            const yGeometry = new THREE.BufferGeometry().setFromPoints(yPoints);
+            
+            const xAxis = new THREE.Line(xGeometry, xAxisMaterial);
+            const yAxis = new THREE.Line(yGeometry, yAxisMaterial);
+            
+            group.add(xAxis);
+            group.add(yAxis);
+        } else if (plane === 'yz') {
+            // Y and Z axes for side view that extend in both directions
+            const yPoints = [
+                new THREE.Vector3(0, -axisLength, 0),
+                new THREE.Vector3(0, axisLength, 0)
+            ];
+            const zPoints = [
+                new THREE.Vector3(0, 0, -axisLength),
+                new THREE.Vector3(0, 0, axisLength)
+            ];
+            
+            const yGeometry = new THREE.BufferGeometry().setFromPoints(yPoints);
+            const zGeometry = new THREE.BufferGeometry().setFromPoints(zPoints);
+            
+            const yAxis = new THREE.Line(yGeometry, yAxisMaterial);
+            const zAxis = new THREE.Line(zGeometry, zAxisMaterial);
+            
+            group.add(yAxis);
+            group.add(zAxis);
+        }
+        
+        return group;
+    }
+    
+    // Create axis helpers for each view
+    const topAxisHelper = createAxisHelper('xz');
+    const frontAxisHelper = createAxisHelper('xy');
+    const rightAxisHelper = createAxisHelper('yz');
+    const leftAxisHelper = createAxisHelper('yz');
     
     // Top view (looking down the Y axis)
     const topContainer = document.getElementById('top-view-canvas');
@@ -603,11 +756,22 @@ function initOrthographicViews() {
     topScene.add(topLight);
     topScene.add(new THREE.AmbientLight(0xffffff, 0.4));
     
-    // Add grid to help with orientation
-    topScene.add(gridHelperXZ.clone());
+    // Add grid and axis helpers to help with orientation
+    topScene.add(gridHelperXZ);
+    topScene.add(topAxisHelper);
     
-    // Create camera
-    topCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
+    // Calculate aspect ratio to maintain square proportions
+    const topAspect = topContainer.clientWidth / topContainer.clientHeight;
+    
+    // Create camera with square aspect ratio
+    const topViewSize = 7; // Adjusted size for better view
+    topCamera = new THREE.OrthographicCamera(
+        -topViewSize * Math.max(topAspect, 1),
+        topViewSize * Math.max(topAspect, 1),
+        topViewSize / Math.min(topAspect, 1),
+        -topViewSize / Math.min(topAspect, 1),
+        0.1, 1000
+    );
     topCamera.position.set(0, 10, 0);
     topCamera.lookAt(0, 0, 0);
     
@@ -616,6 +780,9 @@ function initOrthographicViews() {
     topRenderer.setSize(topContainer.clientWidth, topContainer.clientHeight);
     topContainer.innerHTML = ''; // Clear container
     topContainer.appendChild(topRenderer.domElement);
+    
+    // Force an initial render to ensure the view appears
+    topRenderer.render(topScene, topCamera);
     
     // Front view (looking down the Z axis)
     const frontContainer = document.getElementById('front-view-canvas');
@@ -633,11 +800,22 @@ function initOrthographicViews() {
     frontScene.add(frontLight);
     frontScene.add(new THREE.AmbientLight(0xffffff, 0.4));
     
-    // Add grid to help with orientation
-    frontScene.add(gridHelperXY.clone());
+    // Add grid and axis helpers
+    frontScene.add(gridHelperXY);
+    frontScene.add(frontAxisHelper);
     
-    // Create camera
-    frontCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
+    // Calculate aspect ratio for front view
+    const frontAspect = frontContainer.clientWidth / frontContainer.clientHeight;
+    
+    // Create camera with square aspect ratio
+    const frontViewSize = 7;
+    frontCamera = new THREE.OrthographicCamera(
+        -frontViewSize * Math.max(frontAspect, 1),
+        frontViewSize * Math.max(frontAspect, 1),
+        frontViewSize / Math.min(frontAspect, 1),
+        -frontViewSize / Math.min(frontAspect, 1),
+        0.1, 1000
+    );
     frontCamera.position.set(0, 0, 10);
     frontCamera.lookAt(0, 0, 0);
     
@@ -646,6 +824,9 @@ function initOrthographicViews() {
     frontRenderer.setSize(frontContainer.clientWidth, frontContainer.clientHeight);
     frontContainer.innerHTML = ''; // Clear container
     frontContainer.appendChild(frontRenderer.domElement);
+    
+    // Force an initial render to ensure the view appears
+    frontRenderer.render(frontScene, frontCamera);
     
     // Right view (looking down the X axis)
     const rightContainer = document.getElementById('right-view-canvas');
@@ -663,11 +844,22 @@ function initOrthographicViews() {
     rightScene.add(rightLight);
     rightScene.add(new THREE.AmbientLight(0xffffff, 0.4));
     
-    // Add grid to help with orientation
-    rightScene.add(gridHelperYZ.clone());
+    // Add grid and axis helpers
+    rightScene.add(gridHelperYZ);
+    rightScene.add(rightAxisHelper);
     
-    // Create camera
-    rightCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
+    // Calculate aspect ratio for right view
+    const rightAspect = rightContainer.clientWidth / rightContainer.clientHeight;
+    
+    // Create camera with square aspect ratio
+    const rightViewSize = 7;
+    rightCamera = new THREE.OrthographicCamera(
+        -rightViewSize * Math.max(rightAspect, 1),
+        rightViewSize * Math.max(rightAspect, 1),
+        rightViewSize / Math.min(rightAspect, 1),
+        -rightViewSize / Math.min(rightAspect, 1),
+        0.1, 1000
+    );
     rightCamera.position.set(10, 0, 0);
     rightCamera.lookAt(0, 0, 0);
     
@@ -676,6 +868,9 @@ function initOrthographicViews() {
     rightRenderer.setSize(rightContainer.clientWidth, rightContainer.clientHeight);
     rightContainer.innerHTML = ''; // Clear container
     rightContainer.appendChild(rightRenderer.domElement);
+    
+    // Force an initial render to ensure the view appears
+    rightRenderer.render(rightScene, rightCamera);
     
     // Left view (looking down the negative X axis)
     const leftContainer = document.getElementById('left-view-canvas');
@@ -693,19 +888,33 @@ function initOrthographicViews() {
     leftScene.add(leftLight);
     leftScene.add(new THREE.AmbientLight(0xffffff, 0.4));
     
-    // Add grid to help with orientation
-    leftScene.add(gridHelperYZ.clone());
+    // Add grid and axis helpers
+    leftScene.add(gridHelperYZ.clone()); // Clone to have separate instance
+    leftScene.add(leftAxisHelper);
     
-    // Create camera
-    leftCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
+    // Calculate aspect ratio for left view
+    const leftAspect = leftContainer.clientWidth / leftContainer.clientHeight;
+    
+    // Create camera with square aspect ratio
+    const leftViewSize = 7;
+    leftCamera = new THREE.OrthographicCamera(
+        -leftViewSize * Math.max(leftAspect, 1),
+        leftViewSize * Math.max(leftAspect, 1),
+        leftViewSize / Math.min(leftAspect, 1),
+        -leftViewSize / Math.min(leftAspect, 1),
+        0.1, 1000
+    );
     leftCamera.position.set(-10, 0, 0);
     leftCamera.lookAt(0, 0, 0);
     
-    // Create renderer
+    // Create renderer for left view
     leftRenderer = new THREE.WebGLRenderer({ antialias: true });
     leftRenderer.setSize(leftContainer.clientWidth, leftContainer.clientHeight);
     leftContainer.innerHTML = ''; // Clear container
     leftContainer.appendChild(leftRenderer.domElement);
+    
+    // Force an initial render to ensure the view appears
+    leftRenderer.render(leftScene, leftCamera);
     
     // Initialize mobile views with the same settings
     initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ);
@@ -716,6 +925,86 @@ function initOrthographicViews() {
 // Initialize mobile orthographic views
 function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
     console.log("Initializing mobile orthographic views...");
+    
+    // Use the same axis helper creation function from above
+    // Re-create the function to avoid scope issues
+    function createMobileAxisHelper(plane) {
+        const group = new THREE.Group();
+        
+        // Create materials for each axis
+        const xAxisMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+        const yAxisMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+        const zAxisMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+        
+        const axisLength = 5;
+        
+        if (plane === 'xz') {
+            // X and Z axes for top view that extend in both directions
+            const xPoints = [
+                new THREE.Vector3(-axisLength, 0, 0),
+                new THREE.Vector3(axisLength, 0, 0)
+            ];
+            const zPoints = [
+                new THREE.Vector3(0, 0, -axisLength),
+                new THREE.Vector3(0, 0, axisLength)
+            ];
+            
+            const xGeometry = new THREE.BufferGeometry().setFromPoints(xPoints);
+            const zGeometry = new THREE.BufferGeometry().setFromPoints(zPoints);
+            
+            const xAxis = new THREE.Line(xGeometry, xAxisMaterial);
+            const zAxis = new THREE.Line(zGeometry, zAxisMaterial);
+            
+            group.add(xAxis);
+            group.add(zAxis);
+        } else if (plane === 'xy') {
+            // X and Y axes for front view that extend in both directions
+            const xPoints = [
+                new THREE.Vector3(-axisLength, 0, 0),
+                new THREE.Vector3(axisLength, 0, 0)
+            ];
+            const yPoints = [
+                new THREE.Vector3(0, -axisLength, 0),
+                new THREE.Vector3(0, axisLength, 0)
+            ];
+            
+            const xGeometry = new THREE.BufferGeometry().setFromPoints(xPoints);
+            const yGeometry = new THREE.BufferGeometry().setFromPoints(yPoints);
+            
+            const xAxis = new THREE.Line(xGeometry, xAxisMaterial);
+            const yAxis = new THREE.Line(yGeometry, yAxisMaterial);
+            
+            group.add(xAxis);
+            group.add(yAxis);
+        } else if (plane === 'yz') {
+            // Y and Z axes for side view that extend in both directions
+            const yPoints = [
+                new THREE.Vector3(0, -axisLength, 0),
+                new THREE.Vector3(0, axisLength, 0)
+            ];
+            const zPoints = [
+                new THREE.Vector3(0, 0, -axisLength),
+                new THREE.Vector3(0, 0, axisLength)
+            ];
+            
+            const yGeometry = new THREE.BufferGeometry().setFromPoints(yPoints);
+            const zGeometry = new THREE.BufferGeometry().setFromPoints(zPoints);
+            
+            const yAxis = new THREE.Line(yGeometry, yAxisMaterial);
+            const zAxis = new THREE.Line(zGeometry, zAxisMaterial);
+            
+            group.add(yAxis);
+            group.add(zAxis);
+        }
+        
+        return group;
+    }
+    
+    // Create mobile axis helpers
+    const mobileTopAxisHelper = createMobileAxisHelper('xz');
+    const mobileFrontAxisHelper = createMobileAxisHelper('xy');
+    const mobileRightAxisHelper = createMobileAxisHelper('yz');
+    const mobileLeftAxisHelper = createMobileAxisHelper('yz');
     
     // Mobile top view
     const mobileTopContainer = document.getElementById('mobile-top-view-canvas');
@@ -729,11 +1018,22 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         window.mobileTopScene.add(mobileTopLight);
         window.mobileTopScene.add(new THREE.AmbientLight(0xffffff, 0.4));
         
-        // Add grid to help with orientation
+        // Add grid and axis helpers to help with orientation
         window.mobileTopScene.add(gridHelperXZ.clone());
+        window.mobileTopScene.add(mobileTopAxisHelper);
         
-        // Create camera
-        window.mobileTopCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
+        // Calculate aspect ratio to maintain square proportions
+        const mobileTopAspect = mobileTopContainer.clientWidth / mobileTopContainer.clientHeight;
+        
+        // Create camera with square aspect ratio
+        const mobileTopViewSize = 7;
+        window.mobileTopCamera = new THREE.OrthographicCamera(
+            -mobileTopViewSize * Math.max(mobileTopAspect, 1),
+            mobileTopViewSize * Math.max(mobileTopAspect, 1),
+            mobileTopViewSize / Math.min(mobileTopAspect, 1),
+            -mobileTopViewSize / Math.min(mobileTopAspect, 1),
+            0.1, 1000
+        );
         window.mobileTopCamera.position.set(0, 10, 0);
         window.mobileTopCamera.lookAt(0, 0, 0);
         
@@ -742,6 +1042,9 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         window.mobileTopRenderer.setSize(mobileTopContainer.clientWidth, mobileTopContainer.clientHeight);
         mobileTopContainer.innerHTML = ''; // Clear container
         mobileTopContainer.appendChild(window.mobileTopRenderer.domElement);
+        
+        // Force an initial render
+        window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
     }
     
     // Mobile front view
@@ -756,11 +1059,22 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         window.mobileFrontScene.add(mobileFrontLight);
         window.mobileFrontScene.add(new THREE.AmbientLight(0xffffff, 0.4));
         
-        // Add grid to help with orientation
+        // Add grid and axis helpers
         window.mobileFrontScene.add(gridHelperXY.clone());
+        window.mobileFrontScene.add(mobileFrontAxisHelper);
         
-        // Create camera
-        window.mobileFrontCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
+        // Calculate aspect ratio for front view
+        const mobileFrontAspect = mobileFrontContainer.clientWidth / mobileFrontContainer.clientHeight;
+        
+        // Create camera with square aspect ratio
+        const mobileFrontViewSize = 7;
+        window.mobileFrontCamera = new THREE.OrthographicCamera(
+            -mobileFrontViewSize * Math.max(mobileFrontAspect, 1),
+            mobileFrontViewSize * Math.max(mobileFrontAspect, 1),
+            mobileFrontViewSize / Math.min(mobileFrontAspect, 1),
+            -mobileFrontViewSize / Math.min(mobileFrontAspect, 1),
+            0.1, 1000
+        );
         window.mobileFrontCamera.position.set(0, 0, 10);
         window.mobileFrontCamera.lookAt(0, 0, 0);
         
@@ -769,6 +1083,9 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         window.mobileFrontRenderer.setSize(mobileFrontContainer.clientWidth, mobileFrontContainer.clientHeight);
         mobileFrontContainer.innerHTML = ''; // Clear container
         mobileFrontContainer.appendChild(window.mobileFrontRenderer.domElement);
+        
+        // Force an initial render
+        window.mobileFrontRenderer.render(window.mobileFrontScene, window.mobileFrontCamera);
     }
     
     // Mobile right view
@@ -783,11 +1100,22 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         window.mobileRightScene.add(mobileRightLight);
         window.mobileRightScene.add(new THREE.AmbientLight(0xffffff, 0.4));
         
-        // Add grid to help with orientation
+        // Add grid and axis helpers
         window.mobileRightScene.add(gridHelperYZ.clone());
+        window.mobileRightScene.add(mobileRightAxisHelper);
         
-        // Create camera
-        window.mobileRightCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
+        // Calculate aspect ratio for right view
+        const mobileRightAspect = mobileRightContainer.clientWidth / mobileRightContainer.clientHeight;
+        
+        // Create camera with square aspect ratio
+        const mobileRightViewSize = 7;
+        window.mobileRightCamera = new THREE.OrthographicCamera(
+            -mobileRightViewSize * Math.max(mobileRightAspect, 1),
+            mobileRightViewSize * Math.max(mobileRightAspect, 1),
+            mobileRightViewSize / Math.min(mobileRightAspect, 1),
+            -mobileRightViewSize / Math.min(mobileRightAspect, 1),
+            0.1, 1000
+        );
         window.mobileRightCamera.position.set(10, 0, 0);
         window.mobileRightCamera.lookAt(0, 0, 0);
         
@@ -796,6 +1124,9 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         window.mobileRightRenderer.setSize(mobileRightContainer.clientWidth, mobileRightContainer.clientHeight);
         mobileRightContainer.innerHTML = ''; // Clear container
         mobileRightContainer.appendChild(window.mobileRightRenderer.domElement);
+        
+        // Force an initial render
+        window.mobileRightRenderer.render(window.mobileRightScene, window.mobileRightCamera);
     }
     
     // Mobile left view
@@ -810,11 +1141,22 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         window.mobileLeftScene.add(mobileLeftLight);
         window.mobileLeftScene.add(new THREE.AmbientLight(0xffffff, 0.4));
         
-        // Add grid to help with orientation
+        // Add grid and axis helpers
         window.mobileLeftScene.add(gridHelperYZ.clone());
+        window.mobileLeftScene.add(mobileLeftAxisHelper);
         
-        // Create camera
-        window.mobileLeftCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
+        // Calculate aspect ratio for left view
+        const mobileLeftAspect = mobileLeftContainer.clientWidth / mobileLeftContainer.clientHeight;
+        
+        // Create camera with square aspect ratio
+        const mobileLeftViewSize = 7;
+        window.mobileLeftCamera = new THREE.OrthographicCamera(
+            -mobileLeftViewSize * Math.max(mobileLeftAspect, 1),
+            mobileLeftViewSize * Math.max(mobileLeftAspect, 1),
+            mobileLeftViewSize / Math.min(mobileLeftAspect, 1),
+            -mobileLeftViewSize / Math.min(mobileLeftAspect, 1),
+            0.1, 1000
+        );
         window.mobileLeftCamera.position.set(-10, 0, 0);
         window.mobileLeftCamera.lookAt(0, 0, 0);
         
@@ -823,6 +1165,9 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         window.mobileLeftRenderer.setSize(mobileLeftContainer.clientWidth, mobileLeftContainer.clientHeight);
         mobileLeftContainer.innerHTML = ''; // Clear container
         mobileLeftContainer.appendChild(window.mobileLeftRenderer.domElement);
+        
+        // Force an initial render
+        window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
     }
     
     // Add event listener for the panel becoming visible to handle resize
@@ -851,6 +1196,21 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
 function resizeMobileViewRenderers() {
     console.log("Resizing mobile view renderers...");
     
+    // Function to update an orthographic camera to maintain square proportions
+    function updateMobileOrthographicCamera(camera, container, viewSize = 7) {
+        if (!camera || !container) return;
+        
+        const aspect = container.clientWidth / container.clientHeight;
+        
+        // Update camera frustum to maintain square grid cells
+        camera.left = -viewSize * Math.max(aspect, 1);
+        camera.right = viewSize * Math.max(aspect, 1);
+        camera.top = viewSize / Math.min(aspect, 1);
+        camera.bottom = -viewSize / Math.min(aspect, 1);
+        
+        camera.updateProjectionMatrix();
+    }
+    
     // Handle top view
     if (window.mobileTopRenderer) {
         const container = document.getElementById('mobile-top-view-canvas');
@@ -858,7 +1218,10 @@ function resizeMobileViewRenderers() {
             const width = container.clientWidth || 100;
             const height = container.clientHeight || 100;
             window.mobileTopRenderer.setSize(width, height);
+            
             if (window.mobileTopScene && window.mobileTopCamera) {
+                // Update camera to maintain square proportions
+                updateMobileOrthographicCamera(window.mobileTopCamera, container);
                 window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
             }
         }
@@ -871,7 +1234,10 @@ function resizeMobileViewRenderers() {
             const width = container.clientWidth || 100;
             const height = container.clientHeight || 100;
             window.mobileFrontRenderer.setSize(width, height);
+            
             if (window.mobileFrontScene && window.mobileFrontCamera) {
+                // Update camera to maintain square proportions
+                updateMobileOrthographicCamera(window.mobileFrontCamera, container);
                 window.mobileFrontRenderer.render(window.mobileFrontScene, window.mobileFrontCamera);
             }
         }
@@ -884,7 +1250,10 @@ function resizeMobileViewRenderers() {
             const width = container.clientWidth || 100;
             const height = container.clientHeight || 100;
             window.mobileRightRenderer.setSize(width, height);
+            
             if (window.mobileRightScene && window.mobileRightCamera) {
+                // Update camera to maintain square proportions
+                updateMobileOrthographicCamera(window.mobileRightCamera, container);
                 window.mobileRightRenderer.render(window.mobileRightScene, window.mobileRightCamera);
             }
         }
@@ -897,7 +1266,10 @@ function resizeMobileViewRenderers() {
             const width = container.clientWidth || 100;
             const height = container.clientHeight || 100;
             window.mobileLeftRenderer.setSize(width, height);
+            
             if (window.mobileLeftScene && window.mobileLeftCamera) {
+                // Update camera to maintain square proportions
+                updateMobileOrthographicCamera(window.mobileLeftCamera, container);
                 window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
             }
         }
@@ -4529,51 +4901,111 @@ function updateCamerasForShape(shapeDef) {
 function onWindowResize() {
     const container = document.getElementById('canvas-container');
     
+    // Update main view
     mainCamera.aspect = container.clientWidth / container.clientHeight;
     mainCamera.updateProjectionMatrix();
     mainRenderer.setSize(container.clientWidth, container.clientHeight);
     
-    // Update orthographic views if they exist
+    // Function to update an orthographic camera to maintain square proportions
+    function updateOrthographicCamera(camera, container, viewSize = 7) {
+        if (!camera || !container) return;
+        
+        const aspect = container.clientWidth / container.clientHeight;
+        
+        // Update camera frustum to maintain square grid cells
+        camera.left = -viewSize * Math.max(aspect, 1);
+        camera.right = viewSize * Math.max(aspect, 1);
+        camera.top = viewSize / Math.min(aspect, 1);
+        camera.bottom = -viewSize / Math.min(aspect, 1);
+        
+        camera.updateProjectionMatrix();
+    }
+    
+    // Update desktop orthographic views if they exist
     if (topRenderer) {
         const topContainer = document.getElementById('top-view-canvas');
-        if (topContainer) topRenderer.setSize(topContainer.clientWidth, topContainer.clientHeight);
+        if (topContainer) {
+            topRenderer.setSize(topContainer.clientWidth, topContainer.clientHeight);
+            updateOrthographicCamera(topCamera, topContainer);
+        }
     }
     
     if (frontRenderer) {
         const frontContainer = document.getElementById('front-view-canvas');
-        if (frontContainer) frontRenderer.setSize(frontContainer.clientWidth, frontContainer.clientHeight);
+        if (frontContainer) {
+            frontRenderer.setSize(frontContainer.clientWidth, frontContainer.clientHeight);
+            updateOrthographicCamera(frontCamera, frontContainer);
+        }
     }
     
     if (rightRenderer) {
         const rightContainer = document.getElementById('right-view-canvas');
-        if (rightContainer) rightRenderer.setSize(rightContainer.clientWidth, rightContainer.clientHeight);
+        if (rightContainer) {
+            rightRenderer.setSize(rightContainer.clientWidth, rightContainer.clientHeight);
+            updateOrthographicCamera(rightCamera, rightContainer);
+        }
     }
     
     if (leftRenderer) {
         const leftContainer = document.getElementById('left-view-canvas');
-        if (leftContainer) leftRenderer.setSize(leftContainer.clientWidth, leftContainer.clientHeight);
+        if (leftContainer) {
+            leftRenderer.setSize(leftContainer.clientWidth, leftContainer.clientHeight);
+            updateOrthographicCamera(leftCamera, leftContainer);
+        }
     }
     
     // Update mobile orthographic views if they exist
-    if (window.mobileTopRenderer) {
+    if (window.mobileTopRenderer && window.mobileTopCamera) {
         const mobileTopContainer = document.getElementById('mobile-top-view-canvas');
-        if (mobileTopContainer) window.mobileTopRenderer.setSize(mobileTopContainer.clientWidth, mobileTopContainer.clientHeight);
+        if (mobileTopContainer) {
+            window.mobileTopRenderer.setSize(mobileTopContainer.clientWidth, mobileTopContainer.clientHeight);
+            updateOrthographicCamera(window.mobileTopCamera, mobileTopContainer);
+        }
     }
     
-    if (window.mobileFrontRenderer) {
+    if (window.mobileFrontRenderer && window.mobileFrontCamera) {
         const mobileFrontContainer = document.getElementById('mobile-front-view-canvas');
-        if (mobileFrontContainer) window.mobileFrontRenderer.setSize(mobileFrontContainer.clientWidth, mobileFrontContainer.clientHeight);
+        if (mobileFrontContainer) {
+            window.mobileFrontRenderer.setSize(mobileFrontContainer.clientWidth, mobileFrontContainer.clientHeight);
+            updateOrthographicCamera(window.mobileFrontCamera, mobileFrontContainer);
+        }
     }
     
-    // Add mobile side and left views
-    if (window.mobileRightRenderer) {
+    if (window.mobileRightRenderer && window.mobileRightCamera) {
         const mobileRightContainer = document.getElementById('mobile-right-view-canvas');
-        if (mobileRightContainer) window.mobileRightRenderer.setSize(mobileRightContainer.clientWidth, mobileRightContainer.clientHeight);
+        if (mobileRightContainer) {
+            window.mobileRightRenderer.setSize(mobileRightContainer.clientWidth, mobileRightContainer.clientHeight);
+            updateOrthographicCamera(window.mobileRightCamera, mobileRightContainer);
+        }
     }
     
-    if (window.mobileLeftRenderer) {
+    if (window.mobileLeftRenderer && window.mobileLeftCamera) {
         const mobileLeftContainer = document.getElementById('mobile-left-view-canvas');
-        if (mobileLeftContainer) window.mobileLeftRenderer.setSize(mobileLeftContainer.clientWidth, mobileLeftContainer.clientHeight);
+        if (mobileLeftContainer) {
+            window.mobileLeftRenderer.setSize(mobileLeftContainer.clientWidth, mobileLeftContainer.clientHeight);
+            updateOrthographicCamera(window.mobileLeftCamera, mobileLeftContainer);
+        }
+    }
+    
+    // Trigger a render to update all views immediately
+    if (mainRenderer && mainScene && mainCamera) {
+        mainRenderer.render(mainScene, mainCamera);
+    }
+    
+    if (topRenderer && topScene && topCamera) {
+        topRenderer.render(topScene, topCamera);
+    }
+    
+    if (frontRenderer && frontScene && frontCamera) {
+        frontRenderer.render(frontScene, frontCamera);
+    }
+    
+    if (rightRenderer && rightScene && rightCamera) {
+        rightRenderer.render(rightScene, rightCamera);
+    }
+    
+    if (leftRenderer && leftScene && leftCamera) {
+        leftRenderer.render(leftScene, leftCamera);
     }
 }
 
