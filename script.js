@@ -166,7 +166,7 @@ function setupMobileControls() {
     });
     
     // Toggle panels on icon click
-    function setupIconPanel(icon, panel) {
+    function setupIconPanel(icon, panel, onOpen) {
         icon.addEventListener('click', () => {
             const isActive = panel.classList.contains('active');
             
@@ -178,6 +178,11 @@ function setupMobileControls() {
             if (!isActive) {
                 panel.classList.add('active');
                 icon.classList.add('active');
+                
+                // Call the onOpen callback if provided
+                if (typeof onOpen === 'function') {
+                    onOpen();
+                }
                 
                 // If this is the view panel, trigger resize on mobile view renderers
                 if (panel.id === 'view-panel') {
@@ -235,7 +240,13 @@ function setupMobileControls() {
     
     setupIconPanel(shapeIcon, shapePanel);
     setupIconPanel(viewIcon, viewPanel);
-    setupIconPanel(crossSectionIcon, crossSectionPanel);
+    setupIconPanel(crossSectionIcon, crossSectionPanel, () => {
+        // Sync checkbox state in the modal with the actual state
+        const mobileCrossSectionToggle = document.getElementById('mobile-cross-section-toggle');
+        if (mobileCrossSectionToggle) {
+            mobileCrossSectionToggle.checked = crossSectionEnabled;
+        }
+    });
     setupIconPanel(infoIcon, infoPanel);
     
     // Setup mobile shape buttons
@@ -4722,6 +4733,13 @@ function updateCrossSection() {
         const { width, height, length } = currentShape.dimensions;
         const maxDimension = Math.max(width, height, length);
         planeConstant = (crossSectionPosition - 0.5) * maxDimension;
+    } else if (currentShape.type === 'cylinder' || currentShape.type === 'cone') {
+        const { radius, height } = currentShape.dimensions;
+        const maxDimension = Math.max(radius * 2, height);
+        planeConstant = (crossSectionPosition - 0.5) * maxDimension;
+    } else if (currentShape.type === 'sphere') {
+        const { radius } = currentShape.dimensions;
+        planeConstant = (crossSectionPosition - 0.5) * radius * 2;
     }
     
     plane.constant = planeConstant;
@@ -4734,19 +4752,36 @@ function updateCrossSection() {
     if (transitionValue > 0) {
         const clippingPlanes = [plane];
         
-        // Clone the shape and apply clipping
-        const clippedGeometry = currentShape.mainMesh.geometry.clone();
+        // We need to access the first mesh in the mainMesh group
+        let sourceMesh;
+        if (currentShape.mainMesh.children && currentShape.mainMesh.children.length > 0) {
+            // Find the first actual mesh in the group
+            for (const child of currentShape.mainMesh.children) {
+                if (child.isMesh && child.geometry) {
+                    sourceMesh = child;
+                    break;
+                }
+            }
+        }
         
-        const clippedMaterial = new THREE.MeshStandardMaterial({
-            color: 0xff5555,
-            side: THREE.DoubleSide,
-            clippingPlanes: clippingPlanes
-        });
-        
-        crossSectionMesh = new THREE.Mesh(clippedGeometry, clippedMaterial);
-        crossSectionMesh.rotation.copy(currentShape.mainMesh.rotation);
-        crossSectionMesh.position.copy(currentShape.mainMesh.position);
-        mainScene.add(crossSectionMesh);
+        // Only proceed if we found a valid mesh
+        if (sourceMesh && sourceMesh.geometry) {
+            const clippedGeometry = sourceMesh.geometry.clone();
+            
+            const clippedMaterial = new THREE.MeshStandardMaterial({
+                color: 0xff5555,
+                side: THREE.DoubleSide,
+                clippingPlanes: clippingPlanes
+            });
+            
+            crossSectionMesh = new THREE.Mesh(clippedGeometry, clippedMaterial);
+            
+            // Copy rotation and position from the source mesh
+            crossSectionMesh.rotation.copy(sourceMesh.rotation);
+            crossSectionMesh.position.copy(sourceMesh.position);
+            
+            mainScene.add(crossSectionMesh);
+        }
     }
 }
 
