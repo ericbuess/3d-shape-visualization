@@ -4198,9 +4198,9 @@ function createCylinder(radius, height, radiusSegments = 32) {
     const leftEdges = new THREE.LineSegments(new THREE.EdgesGeometry(leftMeshGeometry), edgeMaterial.clone());
     
     // Set correct rotations for orthographic views
-    // No rotation needed for top view of cylinder
-    topMesh.rotation.x = Math.PI / 2;
-    topEdges.rotation.x = Math.PI / 2;
+    // For top view of cylinder, looking down the y-axis (no rotation needed)
+    topMesh.rotation.x = 0;
+    topEdges.rotation.x = 0;
     
     frontMesh.rotation.x = 0;
     frontEdges.rotation.x = 0;
@@ -4330,8 +4330,9 @@ function createCone(radius, height, radiusSegments = 32) {
     const leftEdges = new THREE.LineSegments(new THREE.EdgesGeometry(leftMeshGeometry), edgeMaterial.clone());
     
     // Set correct rotations for orthographic views
-    topMesh.rotation.x = Math.PI / 2;
-    topEdges.rotation.x = Math.PI / 2;
+    // For cone top view, looking down the y-axis (no rotation needed)
+    topMesh.rotation.x = 0;
+    topEdges.rotation.x = 0;
     
     // No rotation needed for front view
     
