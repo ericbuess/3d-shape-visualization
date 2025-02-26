@@ -2504,11 +2504,13 @@ function updateShapeDetails(shape) {
         const netHTML = `
             <svg width="100%" height="350" viewBox="0 0 500 350" preserveAspectRatio="xMidYMid meet" style="display: block; min-width: 100%; max-width: 100%; margin: 0 auto;">
                 <!-- Cylinder net showing rectangular lateral surface and two circular bases -->
-                <circle cx="110" cy="180" r="${radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                <!-- Adjusted the positioning to be more balanced and centered -->
+                <circle cx="110" cy="175" r="${radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
                 
-                <rect x="150" y="80" width="${2 * Math.PI * radius * 10}" height="${height * 10}" fill="#bbdefb" stroke="#2196f3" stroke-width="2"/>
+                <!-- Adjusted height position to better align with the circles -->
+                <rect x="150" y="${175 - height * 5}" width="${2 * Math.PI * radius * 10}" height="${height * 10}" fill="#bbdefb" stroke="#2196f3" stroke-width="2"/>
                 
-                <circle cx="390" cy="180" r="${radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                <circle cx="390" cy="175" r="${radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
                 
                 <!-- Grid lines for the rectangular surface -->
                 ${
@@ -2518,7 +2520,7 @@ function updateShapeDetails(shape) {
                         const rectWidth = 2 * Math.PI * radius * 10;
                         const rectHeight = height * 10;
                         const startX = 150;
-                        const startY = 80;
+                        const startY = 175 - height * 5;
                         
                         // Vertical grid lines at intervals
                         for (let i = 1; i < 10; i++) {
@@ -2538,7 +2540,7 @@ function updateShapeDetails(shape) {
                         // Draw radial lines
                         const leftCenter = 110;
                         const rightCenter = 390;
-                        const centerY = 180;
+                        const centerY = 175;
                         const baseRadius = radius * 10;
                         
                         for (let i = 0; i < 8; i++) {
@@ -2568,29 +2570,29 @@ function updateShapeDetails(shape) {
                 }
                 
                 <!-- Labels -->
-                <rect x="80" y="130" width="60" height="16" fill="white" fill-opacity="0.8"/>
-                <text x="110" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Base 1</text>
+                <rect x="80" y="125" width="60" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="110" y="137" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Base 1</text>
                 
-                <rect x="240" y="68" width="60" height="16" fill="white" fill-opacity="0.8"/>
-                <text x="270" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Lateral Surface</text>
+                <rect x="240" y="${175 - height * 5 - 20}" width="60" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="270" y="${175 - height * 5 - 8}" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Lateral Surface</text>
                 
-                <rect x="360" y="130" width="60" height="16" fill="white" fill-opacity="0.8"/>
-                <text x="390" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Base 2</text>
+                <rect x="360" y="125" width="60" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="390" y="137" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Base 2</text>
                 
                 <!-- Folding lines -->
-                <line x1="150" y1="80" x2="150" y2="${80 + height * 10}" stroke="#000" stroke-width="1.5" stroke-dasharray="5,3"/>
-                <line x1="${150 + 2 * Math.PI * radius * 10}" y1="80" x2="${150 + 2 * Math.PI * radius * 10}" y2="${80 + height * 10}" stroke="#000" stroke-width="1.5" stroke-dasharray="5,3"/>
+                <line x1="150" y1="${175 - height * 5}" x2="150" y2="${175 + height * 5}" stroke="#000" stroke-width="1.5" stroke-dasharray="5,3"/>
+                <line x1="${150 + 2 * Math.PI * radius * 10}" y1="${175 - height * 5}" x2="${150 + 2 * Math.PI * radius * 10}" y2="${175 + height * 5}" stroke="#000" stroke-width="1.5" stroke-dasharray="5,3"/>
                 
                 <!-- Dimensions -->
-                <line x1="110" y1="230" x2="110" y2="260" stroke="#000" stroke-width="1"/>
-                <line x1="90" y1="245" x2="130" y2="245" stroke="#000" stroke-width="1"/>
+                <line x1="110" y1="220" x2="110" y2="250" stroke="#000" stroke-width="1"/>
+                <line x1="90" y1="235" x2="130" y2="235" stroke="#000" stroke-width="1"/>
                 <text x="110" y="265" text-anchor="middle" font-size="12" fill="#000">r=${radius} units</text>
                 
-                <line x1="130" y1="80" x2="130" y2="${80 + height * 10}" stroke="#000" stroke-width="1"/>
-                <text x="120" y="${80 + height * 5}" transform="rotate(90, 120, ${80 + height * 5})" text-anchor="middle" font-size="12" fill="#000">h=${height} units</text>
+                <line x1="130" y1="${175 - height * 5}" x2="130" y2="${175 + height * 5}" stroke="#000" stroke-width="1"/>
+                <text x="115" y="175" transform="rotate(90, 115, 175)" text-anchor="middle" font-size="12" fill="#000">h=${height} units</text>
                 
-                <line x1="150" y1="60" x2="${150 + 2 * Math.PI * radius * 10}" y2="60" stroke="#000" stroke-width="1"/>
-                <text x="${150 + Math.PI * radius * 10}" y="50" text-anchor="middle" font-size="12" fill="#000">Circumference = 2πr = ${(2 * Math.PI * radius).toFixed(2)} units</text>
+                <line x1="150" y1="${175 - height * 5 - 20}" x2="${150 + 2 * Math.PI * radius * 10}" y2="${175 - height * 5 - 20}" stroke="#000" stroke-width="1"/>
+                <text x="${150 + Math.PI * radius * 10}" y="${175 - height * 5 - 30}" text-anchor="middle" font-size="12" fill="#000">Circumference = 2πr = ${(2 * Math.PI * radius).toFixed(2)} units</text>
             </svg>
             
             <p class="net-description">Net of a cylinder showing the two circular bases (radius ${radius} units) and the rectangular lateral surface (${height} × ${(2 * Math.PI * radius).toFixed(2)} units)</p>
@@ -2725,12 +2727,12 @@ function updateShapeDetails(shape) {
         const netHTML = `
             <svg width="100%" height="350" viewBox="0 0 500 350" preserveAspectRatio="xMidYMid meet" style="display: block; min-width: 100%; max-width: 100%; margin: 0 auto;">
                 <!-- Cone net showing circular base and sector for lateral surface -->
-                <circle cx="150" cy="200" r="${radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                <circle cx="150" cy="175" r="${radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
                 
-                <!-- Circular sector for lateral surface -->
+                <!-- Circular sector for lateral surface - improved positioning and angle -->
                 <!-- The central angle of the sector is 2π×r/slant height -->
-                <path d="M 350,180 L 350,${180 + slantHeight * 10} A ${radius * 10 * 2 * Math.PI / slantHeight} ${radius * 10 * 2 * Math.PI / slantHeight} 0 0 1 350,180 Z" 
-                      fill="#bbdefb" stroke="#2196f3" stroke-width="2" transform="rotate(${-180 * radius / slantHeight}, 350, 180)"/>
+                <path d="M 350,175 L 350,${175 + slantHeight * 10} A ${radius * 10 * 2 * Math.PI / slantHeight} ${radius * 10 * 2 * Math.PI / slantHeight} 0 0 1 350,175 Z" 
+                      fill="#bbdefb" stroke="#2196f3" stroke-width="2" transform="rotate(${-180 * radius / slantHeight}, 350, 175)"/>
                 
                 <!-- Grid lines for the base -->
                 ${
@@ -2738,7 +2740,7 @@ function updateShapeDetails(shape) {
                     (function() {
                         let lines = '';
                         const centerX = 150;
-                        const centerY = 200;
+                        const centerY = 175;
                         const baseRadius = radius * 10;
                         
                         // Radial grid lines
@@ -2768,7 +2770,7 @@ function updateShapeDetails(shape) {
                     (function() {
                         let lines = '';
                         const centerX = 350;
-                        const centerY = 180;
+                        const centerY = 175;
                         const sectorRadius = slantHeight * 10;
                         const angle = 2 * Math.PI * radius / slantHeight;
                         
@@ -2799,22 +2801,22 @@ function updateShapeDetails(shape) {
                 }
                 
                 <!-- Labels -->
-                <rect x="120" y="150" width="60" height="16" fill="white" fill-opacity="0.8"/>
-                <text x="150" y="162" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Base</text>
+                <rect x="120" y="125" width="60" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="150" y="137" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Base</text>
                 
-                <rect x="320" y="230" width="60" height="16" fill="white" fill-opacity="0.8"/>
-                <text x="350" y="242" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Lateral Surface</text>
+                <rect x="320" y="225" width="60" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="350" y="237" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Lateral Surface</text>
                 
                 <!-- Dimensions -->
-                <line x1="150" y1="250" x2="150" y2="280" stroke="#000" stroke-width="1"/>
-                <line x1="130" y1="265" x2="170" y2="265" stroke="#000" stroke-width="1"/>
-                <text x="150" y="295" text-anchor="middle" font-size="12" fill="#000">r=${radius} units</text>
+                <line x1="150" y1="225" x2="150" y2="255" stroke="#000" stroke-width="1"/>
+                <line x1="130" y1="240" x2="170" y2="240" stroke="#000" stroke-width="1"/>
+                <text x="150" y="270" text-anchor="middle" font-size="12" fill="#000">r=${radius} units</text>
                 
-                <line x1="350" y1="180" x2="${350 + slantHeight * 10 * 0.5}" y2="${180 + slantHeight * 10 * 0.866}" stroke="#000" stroke-width="1" stroke-dasharray="5,3"/>
-                <text x="${350 + slantHeight * 5 * 0.5}" y="${180 + slantHeight * 5 * 0.866 - 10}" text-anchor="middle" font-size="12" fill="#000">l=${slantHeight.toFixed(2)} units</text>
+                <line x1="350" y1="175" x2="${350 + slantHeight * 10 * 0.5}" y2="${175 + slantHeight * 10 * 0.866}" stroke="#000" stroke-width="1" stroke-dasharray="5,3"/>
+                <text x="${350 + slantHeight * 5 * 0.5}" y="${175 + slantHeight * 5 * 0.866 - 10}" text-anchor="middle" font-size="12" fill="#000">l=${slantHeight.toFixed(2)} units</text>
                 
-                <line x1="200" y1="200" x2="300" y2="200" stroke="#000" stroke-width="1"/>
-                <text x="250" y="190" text-anchor="middle" font-size="12" fill="#000">Cone height = ${height} units</text>
+                <line x1="200" y1="175" x2="300" y2="175" stroke="#000" stroke-width="1"/>
+                <text x="250" y="165" text-anchor="middle" font-size="12" fill="#000">Cone height = ${height} units</text>
             </svg>
             
             <p class="net-description">Net of a cone showing the circular base (radius ${radius} units) and the sector that forms the lateral surface</p>
@@ -2945,14 +2947,14 @@ function updateShapeDetails(shape) {
             <svg width="100%" height="400" viewBox="0 0 500 400" preserveAspectRatio="xMidYMid meet" style="display: block; min-width: 100%; max-width: 100%; margin: 0 auto;">
                 <!-- Sphere projections: globe view and stereographic projection -->
                 
-                <!-- 3D globe representation -->
-                <circle cx="150" cy="200" r="${radius * 10}" fill="#bbdefb" stroke="#2196f3" stroke-width="2"/>
+                <!-- 3D globe representation - centered vertically -->
+                <circle cx="150" cy="175" r="${radius * 10}" fill="#bbdefb" stroke="#2196f3" stroke-width="2"/>
                 
                 <!-- Equator line -->
-                <ellipse cx="150" cy="200" rx="${radius * 10}" ry="${radius * 3}" stroke="#2196f3" stroke-width="1.5" fill="none"/>
+                <ellipse cx="150" cy="175" rx="${radius * 10}" ry="${radius * 3}" stroke="#2196f3" stroke-width="1.5" fill="none"/>
                 
                 <!-- Prime meridian -->
-                <line x1="150" y1="${200 - radius * 10}" x2="150" y2="${200 + radius * 10}" stroke="#2196f3" stroke-width="1.5"/>
+                <line x1="150" y1="${175 - radius * 10}" x2="150" y2="${175 + radius * 10}" stroke="#2196f3" stroke-width="1.5"/>
                 
                 <!-- Grid lines for latitude and longitude -->
                 ${
@@ -2960,7 +2962,7 @@ function updateShapeDetails(shape) {
                     (function() {
                         let lines = '';
                         const centerX = 150;
-                        const centerY = 200;
+                        const centerY = 175;
                         const sphereRadius = radius * 10;
                         
                         // Latitude lines (parallel to equator)
@@ -2990,10 +2992,10 @@ function updateShapeDetails(shape) {
                 }
                 
                 <!-- Highlight great circle -->
-                <ellipse cx="150" cy="200" rx="${radius * 10}" ry="${radius * 10}" stroke="#e74c3c" stroke-width="1.5" fill="none"/>
+                <ellipse cx="150" cy="175" rx="${radius * 10}" ry="${radius * 10}" stroke="#e74c3c" stroke-width="1.5" fill="none"/>
                 
-                <!-- Map projection (mercator-style) -->
-                <rect x="300" y="${200 - radius * 10}" width="${2 * Math.PI * radius * 5}" height="${2 * radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                <!-- Map projection (mercator-style) - aligned with the globe -->
+                <rect x="300" y="${175 - radius * 10}" width="${2 * Math.PI * radius * 5}" height="${2 * radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
                 
                 <!-- Grid lines for map projection -->
                 ${
@@ -3001,7 +3003,7 @@ function updateShapeDetails(shape) {
                     (function() {
                         let lines = '';
                         const startX = 300;
-                        const startY = 200 - radius * 10;
+                        const startY = 175 - radius * 10;
                         const width = 2 * Math.PI * radius * 5;
                         const height = 2 * radius * 10;
                         
@@ -3024,22 +3026,22 @@ function updateShapeDetails(shape) {
                 }
                 
                 <!-- Labels -->
-                <rect x="120" y="140" width="60" height="16" fill="white" fill-opacity="0.8"/>
-                <text x="150" y="152" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Sphere</text>
+                <rect x="120" y="115" width="60" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="150" y="127" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Sphere</text>
                 
-                <rect x="120" y="165" width="120" height="16" fill="white" fill-opacity="0.8"/>
-                <text x="150" y="177" text-anchor="start" font-size="12" font-weight="normal" fill="#e74c3c">Great Circle</text>
+                <rect x="120" y="140" width="120" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="150" y="152" text-anchor="start" font-size="12" font-weight="normal" fill="#e74c3c">Great Circle</text>
                 
-                <rect x="360" y="140" width="120" height="16" fill="white" fill-opacity="0.8"/>
-                <text x="410" y="152" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Map Projection</text>
+                <rect x="360" y="115" width="120" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="410" y="127" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Map Projection</text>
                 
                 <!-- Dimensions -->
-                <line x1="150" y1="${200 + radius * 10 + 10}" x2="150" y2="${200 + radius * 10 + 30}" stroke="#000" stroke-width="1"/>
-                <line x1="130" y1="${200 + radius * 10 + 20}" x2="170" y2="${200 + radius * 10 + 20}" stroke="#000" stroke-width="1"/>
-                <text x="150" y="${200 + radius * 10 + 45}" text-anchor="middle" font-size="12" fill="#000">r=${radius} units</text>
+                <line x1="150" y1="${175 + radius * 10 + 10}" x2="150" y2="${175 + radius * 10 + 30}" stroke="#000" stroke-width="1"/>
+                <line x1="130" y1="${175 + radius * 10 + 20}" x2="170" y2="${175 + radius * 10 + 20}" stroke="#000" stroke-width="1"/>
+                <text x="150" y="${175 + radius * 10 + 45}" text-anchor="middle" font-size="12" fill="#000">r=${radius} units</text>
                 
-                <line x1="300" y1="${200 + radius * 10 + 10}" x2="${300 + 2 * Math.PI * radius * 5}" y2="${200 + radius * 10 + 10}" stroke="#000" stroke-width="1"/>
-                <text x="${300 + Math.PI * radius * 5}" y="${200 + radius * 10 + 25}" text-anchor="middle" font-size="12" fill="#000">Circumference = 2πr = ${(2 * Math.PI * radius).toFixed(2)} units</text>
+                <line x1="300" y1="${175 + radius * 10 + 10}" x2="${300 + 2 * Math.PI * radius * 5}" y2="${175 + radius * 10 + 10}" stroke="#000" stroke-width="1"/>
+                <text x="${300 + Math.PI * radius * 5}" y="${175 + radius * 10 + 25}" text-anchor="middle" font-size="12" fill="#000">Circumference = 2πr = ${(2 * Math.PI * radius).toFixed(2)} units</text>
             </svg>
             
             <p class="net-description">Unlike polyhedra, a sphere doesn't have a flat net. Instead, we show a globe view and a map projection.</p>
