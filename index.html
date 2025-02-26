@@ -55,7 +55,7 @@
                         </div>
                     </div>
                     
-                    <!-- Custom shape input - Always visible section -->
+                    <!-- Custom shape input -->
                     <div id="shape-word-problem" class="shape-word-problem">
                         <h3>Generate Custom Shape</h3>
                         <p class="word-problem-description">Describe a 3D shape in words:</p>
@@ -139,7 +139,7 @@
                             </div>
                         </div>
                         
-                        <!-- Moved orthographic views here -->
+                        <!-- Orthographic views -->
                         <div class="orthographic-views-container">
                             <h3>2D Projections</h3>
                             <div class="orthographic-views">
@@ -212,12 +212,12 @@
             <div class="legend">
                 <h2>Orthographic Drawing Reference</h2>
                 <div class="example-images">
-                    <img src="example1.png" alt="Example 1" class="example-image" onclick="showFullScreenImage('example1.png')">
-                    <img src="example2.png" alt="Example 2" class="example-image" onclick="showFullScreenImage('example2.png')">
+                    <img src="example1.png" alt="Example 1" class="example-image" onclick="window.showFullScreenImage('example1.png')">
+                    <img src="example2.png" alt="Example 2" class="example-image" onclick="window.showFullScreenImage('example2.png')">
                 </div>
-                <div id="fullscreen-image-overlay" class="fullscreen-overlay hidden">
-                    <div class="close-overlay" onclick="hideFullScreenImage()">&times;</div>
-                    <img id="fullscreen-image" src="">
+                <div id="fullscreen-image-overlay" class="fullscreen-overlay hidden" style="display: none !important;">
+                    <div class="close-overlay" onclick="window.hideFullScreenImage()">&times;</div>
+                    <img id="fullscreen-image" src="" alt="Fullscreen example image">
                 </div>
             </div>
         </div>
@@ -232,7 +232,7 @@
     </div>
     
     <!-- Mobile Panels -->
-    <div class="mobile-panel" id="shape-panel">
+    <div class="mobile-panel" id="shape-panel" style="display: none;">
         <button class="close-panel">&times;</button>
         <div class="mobile-panel-title">Select Shape</div>
         <div class="shape-buttons">
@@ -271,7 +271,7 @@
         </div>
     </div>
     
-    <div class="mobile-panel" id="view-panel">
+    <div class="mobile-panel" id="view-panel" style="display: none;">
         <button class="close-panel">&times;</button>
         <div class="mobile-panel-title">View Controls</div>
         <div class="view-buttons">
@@ -323,7 +323,7 @@
         </div>
     </div>
     
-    <div class="mobile-panel" id="cross-section-panel">
+    <div class="mobile-panel" id="cross-section-panel" style="display: none;">
         <button class="close-panel">&times;</button>
         <div class="mobile-panel-title">Cross Section</div>
         <div class="cross-section-toggle">
@@ -343,7 +343,7 @@
         </div>
     </div>
     
-    <div class="mobile-panel" id="info-panel">
+    <div class="mobile-panel" id="info-panel" style="display: none;">
         <button class="close-panel">&times;</button>
         <div class="mobile-panel-title">Shape Information</div>
         <div class="tabs">
@@ -781,7 +781,73 @@
     };
     </script>
 
+    <!-- Fullscreen image functions -->
+    <script>
+        // Define these functions in the global scope
+        window.showFullScreenImage = function(imageSrc) {
+            const overlay = document.getElementById('fullscreen-image-overlay');
+            const image = document.getElementById('fullscreen-image');
+            image.src = imageSrc;
+            overlay.classList.remove('hidden');
+            overlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        };
+        
+        window.hideFullScreenImage = function() {
+            const overlay = document.getElementById('fullscreen-image-overlay');
+            overlay.classList.add('hidden');
+            overlay.style.display = 'none';
+            document.body.style.overflow = ''; // Re-enable scrolling
+        };
+        
+        // Ensure overlay is hidden on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.getElementById('fullscreen-image-overlay');
+            if (overlay) {
+                overlay.classList.add('hidden');
+                overlay.style.display = 'none';
+                console.log('Ensuring fullscreen overlay is hidden on page load');
+            }
+        });
+        
+        // Also hide immediately
+        (function() {
+            const overlay = document.getElementById('fullscreen-image-overlay');
+            if (overlay) {
+                overlay.classList.add('hidden');
+                overlay.style.display = 'none';
+            }
+        })();
+    </script>
+    
     <!-- Main application script -->
     <script src="script.js"></script>
+    
+    <!-- Additional script to ensure mobile panels are hidden on load -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Force all mobile panels to be hidden immediately on page load
+      const mobilePanels = document.querySelectorAll(".mobile-panel");
+      mobilePanels.forEach(panel => {
+        panel.style.display = "none";
+        panel.classList.remove("active");
+      });
+      
+      // Specifically make sure info panel is hidden with !important
+      const infoPanel = document.getElementById("info-panel");
+      if (infoPanel) {
+        infoPanel.style.cssText = "display: none !important";
+        infoPanel.classList.remove("active");
+      }
+      
+      // Prioritize this by executing immediately too
+      setTimeout(function() {
+        const infoPanel = document.getElementById("info-panel");
+        if (infoPanel) {
+          infoPanel.style.cssText = "display: none !important";
+        }
+      }, 0);
+    });
+    </script>
 </body>
 </html>

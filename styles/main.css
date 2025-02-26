@@ -1,0 +1,137 @@
+/* Main CSS File */
+/* Import component styles */
+@import url('./components/controls.css');
+@import url('./components/display.css');
+@import url('./components/formulas.css');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 12px;
+    padding: 8px;
+    background-color: #2c3e50;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    margin-bottom: 2px;
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.header p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* General Styles */
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+button:hover {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+select, input[type="text"] {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    width: 100%;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Utility Classes */
+.fullscreen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.fullscreen-overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border: 2px solid white;
+}
+
+.close-overlay {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 40px;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+/* Responsive Design for mobile devices */
+@media (max-width: 768px) {
+    .controls-container {
+        flex-direction: column;
+    }
+    
+    .controls-left, .controls-right {
+        width: 100%;
+    }
+    
+    .mobile-control-icons {
+        display: block;
+    }
+    
+    .controls-container {
+        display: none;
+    }
+    
+    .bottom-section {
+        flex-direction: column;
+    }
+    
+    .instructions, .legend {
+        width: 100%;
+    }
+}

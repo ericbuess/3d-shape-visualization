@@ -96,6 +96,18 @@ document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
         setupMobileControls();
         
+        // Hide shape details by default - only show after a shape is loaded
+        const shapeDetails = document.getElementById('shape-details');
+        if (shapeDetails) {
+            shapeDetails.style.display = 'none';
+        }
+        
+        // Hide mobile shape details panel by default
+        const mobileShapeInfo = document.getElementById('info-panel');
+        if (mobileShapeInfo) {
+            mobileShapeInfo.style.display = 'none';
+        }
+        
         // Since orthographic views might not be ready yet when we load the first shape,
         // we'll initialize the application but delay loading the first shape
         setTimeout(() => {
@@ -119,6 +131,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             console.log("Setting up initial rendering sequence...");
             
+            // Ensure tabs are set up properly
+            setupTabEvents();
+            
+            // Select the metrics tab by default
+            const metricsTab = document.getElementById('metrics-tab');
+            if (metricsTab) metricsTab.click();
+            
+            // Select mobile metrics tab if it exists
+            const mobileMetricsTab = document.getElementById('mobile-metrics-tab');
+            if (mobileMetricsTab) mobileMetricsTab.click();
+            
             // Sequence the initialization for more reliable rendering
             // First resize the window to make sure dimensions are correct
             onWindowResize();
@@ -127,6 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 updateShapeTransition();
                 console.log("Initial transition applied:", window.transitionValue);
+                
+                // Force shape details update again
+                if (currentShape) {
+                    updateShapeDetails(currentShape);
+                }
                 
                 // Force another resize after everything is ready
                 onWindowResize();
@@ -158,7 +186,10 @@ function setupMobileControls() {
     
     // Close panels function
     const closePanels = () => {
-        allPanels.forEach(panel => panel.classList.remove('active'));
+        allPanels.forEach(panel => {
+            panel.classList.remove('active');
+            panel.style.display = 'none';
+        });
         allIcons.forEach(icon => icon.classList.remove('active'));
     };
     
@@ -194,12 +225,16 @@ function setupMobileControls() {
             const isActive = panel.classList.contains('active');
             
             // Close all panels
-            allPanels.forEach(p => p.classList.remove('active'));
+            allPanels.forEach(p => {
+                p.classList.remove('active');
+                p.style.display = 'none';
+            });
             allIcons.forEach(i => i.classList.remove('active'));
             
             // Open this panel if it wasn't already open
             if (!isActive) {
                 panel.classList.add('active');
+                panel.style.display = 'block';
                 icon.classList.add('active');
                 
                 // Call the onOpen callback if provided
@@ -1533,6 +1568,8 @@ function animateCameraStep() {
 
 // Display shape details in the UI with educational content
 function updateShapeDetails(shape) {
+    console.log("Updating shape details for:", shape.type);
+    
     // Desktop elements
     const dimensionsDiv = document.getElementById('shape-dimensions');
     const propertiesDiv = document.getElementById('shape-properties');
@@ -1559,10 +1596,20 @@ function updateShapeDetails(shape) {
         mobileDimensionsDiv, mobilePropertiesDiv, mobileFormulasDiv, mobileNetsDiv, mobileTopologyDiv
     });
     
+    // Check if elements exist - return early if not
     if (!dimensionsDiv || !propertiesDiv || !formulasDiv || !netsDiv || !topologyDiv) {
         console.error("One or more shape detail elements not found");
         return;
     }
+    
+    // Now make shape details panel visible - it was initially hidden
+    const shapeDetails = document.getElementById('shape-details');
+    if (shapeDetails && window.innerWidth > 768) { // Only show on desktop
+        shapeDetails.style.display = 'flex';
+    }
+    
+    // Don't automatically show mobile elements - they should only show when the icon is tapped
+    // Mobile panel visibility is controlled by the mobile panel system
     
     if (shape.type === 'triangularPrism') {
         const { height, side1, side2, side3 } = shape.dimensions;
@@ -3129,6 +3176,18 @@ function updateShapeDetails(shape) {
 function setupTabEvents() {
     console.log("Setting up tab events");
     
+    // Make sure the shape details container is visible
+    const shapeDetails = document.getElementById('shape-details');
+    if (shapeDetails) {
+        shapeDetails.style.display = 'flex';
+    }
+    
+    // Mobile shape details
+    const mobileShapeInfo = document.getElementById('info-panel');
+    if (mobileShapeInfo) {
+        mobileShapeInfo.style.display = 'block';
+    }
+    
     // Define tab buttons directly by ID for more reliable access
     const tabButtons = {
         metrics: document.getElementById('metrics-tab'),
@@ -3734,6 +3793,23 @@ function loadShape(shapeId) {
             if (customInput) customInput.classList.add('hidden');
             if (mobileCustomInput) mobileCustomInput.classList.add('hidden');
         }
+        
+        // Make sure details are updated for the new shape
+        if (currentShape) {
+            console.log("Updating details for newly loaded shape");
+            updateShapeDetails(currentShape);
+            
+            // Force tabs to be properly set up 
+            setupTabEvents();
+            
+            // Select the metrics tab by default
+            const metricsTab = document.getElementById('metrics-tab');
+            if (metricsTab) metricsTab.click();
+            
+            // Select mobile metrics tab if it exists
+            const mobileMetricsTab = document.getElementById('mobile-metrics-tab');
+            if (mobileMetricsTab) mobileMetricsTab.click();
+        }
     }
 }
 
@@ -3812,7 +3888,8 @@ function createShape(shapeDef) {
         // Update camera to fit the shape
         updateCamerasForShape(shapeDef);
         
-        // Update shape details in the UI
+        // Update shape details in the UI - make sure this is called
+        console.log("Shape created, updating shape details for UI...");
         updateShapeDetails(currentShape);
         
         // Update the transition based on current value
@@ -3831,10 +3908,12 @@ function createShape(shapeDef) {
         
         // Ensure the metrics tab is selected by default
         // Select the metrics tab on desktop
-        document.getElementById('metrics-tab').click();
+        const metricsTab = document.getElementById('metrics-tab');
+        if (metricsTab) metricsTab.click();
+        
         // Select the metrics tab on mobile if it exists
-        const mobilemetricsTab = document.getElementById('mobile-metrics-tab');
-        if (mobilemetricsTab) mobilemetricsTab.click();
+        const mobileMetricsTab = document.getElementById('mobile-metrics-tab');
+        if (mobileMetricsTab) mobileMetricsTab.click();
         
         console.log("Shape created successfully, type:", currentShape.type);
     } catch (error) {
@@ -5102,24 +5181,34 @@ function animate() {
             leftRenderer.render(leftScene, leftCamera);
         }
         
-        // Render mobile orthographic views
-        if (window.mobileTopRenderer && window.mobileTopScene && window.mobileTopCamera) {
-            window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
-        }
-        
-        if (window.mobileFrontRenderer && window.mobileFrontScene && window.mobileFrontCamera) {
-            window.mobileFrontRenderer.render(window.mobileFrontScene, window.mobileFrontCamera);
-        }
-        
-        if (window.mobileRightRenderer && window.mobileRightScene && window.mobileRightCamera) {
-            window.mobileRightRenderer.render(window.mobileRightScene, window.mobileRightCamera);
-        }
-        
-        if (window.mobileLeftRenderer && window.mobileLeftScene && window.mobileLeftCamera) {
-            window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
+        // Render mobile orthographic views - only if their panels are visible
+        const infoPanel = document.getElementById('info-panel');
+        if (infoPanel && infoPanel.style.display === 'block' && infoPanel.classList.contains('active')) {
+            // Panel is visible, render the mobile views
+            if (window.mobileTopRenderer && window.mobileTopScene && window.mobileTopCamera) {
+                window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
+            }
+            
+            if (window.mobileFrontRenderer && window.mobileFrontScene && window.mobileFrontCamera) {
+                window.mobileFrontRenderer.render(window.mobileFrontScene, window.mobileFrontCamera);
+            }
+            
+            if (window.mobileRightRenderer && window.mobileRightScene && window.mobileRightCamera) {
+                window.mobileRightRenderer.render(window.mobileRightScene, window.mobileRightCamera);
+            }
+            
+            if (window.mobileLeftRenderer && window.mobileLeftScene && window.mobileLeftCamera) {
+                window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
+            }
         }
     } catch (error) {
         console.error("Error in animation loop:", error);
+    }
+    
+    // Check on every frame that info panel is hidden if not active
+    const infoPanel = document.getElementById('info-panel');
+    if (infoPanel && !infoPanel.classList.contains('active')) {
+        infoPanel.style.display = 'none';
     }
 }
 

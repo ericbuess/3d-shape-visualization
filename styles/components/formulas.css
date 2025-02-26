@@ -1,0 +1,284 @@
+/* Formulas and Details Component Styles */
+
+/* Shape Details */
+.shape-details {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    min-height: 300px;
+    max-height: 450px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 15px;
+    overflow-x: visible;
+    padding-bottom: 2px;
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+.tab-btn {
+    padding: 12px 5px;
+    min-width: 70px;
+    background-color: transparent;
+    color: #333;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-right: 0;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    font-size: 14px;
+    flex: 1;
+    -webkit-tap-highlight-color: rgba(52, 152, 219, 0.2);
+    touch-action: manipulation;
+}
+
+.tab-btn:hover {
+    background-color: #f0f0f0;
+    transform: none;
+}
+
+.tab-btn:active {
+    background-color: #e3f2fd;
+}
+
+.tab-btn.active {
+    border-bottom: 3px solid #3498db;
+    color: #3498db;
+    font-weight: 700;
+    background-color: #f0f8ff;
+}
+
+.tab-content {
+    display: none;
+    margin-top: 15px;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 330px;
+    width: 100%;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Shape Metrics */
+#shape-dimensions, #shape-properties {
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Formulas */
+#shape-formulas, #mobile-shape-formulas {
+    font-family: "Georgia", serif;
+    font-size: 16px;
+    line-height: 1.8;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+
+#shape-formulas .formula, #mobile-shape-formulas .formula {
+    display: block;
+    margin: 10px 0;
+    text-align: center;
+    font-style: italic;
+    padding: 8px 5px;
+    background-color: #e6f2ff;
+    border-left: 4px solid #3498db;
+    border-radius: 4px;
+}
+
+.formula-explanation {
+    font-size: 14px;
+    margin: 5px 0 15px;
+    color: #555;
+    padding-left: 10px;
+    border-left: 2px solid #ddd;
+}
+
+.formula-highlight {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* Net Display */
+#shape-nets, #mobile-shape-nets {
+    display: block;
+    width: 100% !important;
+    max-width: 100%;
+    clear: both;
+}
+
+.net-image-container {
+    width: 100% !important;
+    max-width: 100%;
+    height: auto;
+    min-height: 250px;
+    margin: 5px auto;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+.net-sequence-container {
+    width: 100% !important;
+    max-width: 100%;
+    display: block;
+    margin-bottom: 15px;
+    overflow-x: hidden;
+    float: none;
+    clear: both;
+    box-sizing: border-box;
+}
+
+.net-sequence-container svg {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* SVG text visibility */
+svg text {
+    fill: #000000;
+    stroke: none;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.net-description {
+    text-align: center;
+    font-size: 14px;
+    margin: 15px auto;
+    padding: 0 10px;
+    max-width: 100%;
+    width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    box-sizing: border-box;
+}
+
+.net-explanation {
+    width: 100%;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    font-size: 13px;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    margin-top: 10px;
+    box-sizing: border-box;
+    max-height: none;
+    overflow-y: visible;
+    float: none;
+    clear: both;
+    display: block;
+}
+
+.net-explanation p {
+    margin: 8px 0;
+}
+
+.net-explanation ul {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.property-highlight {
+    background-color: #fffde7;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.educational-note {
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+    margin-top: 10px;
+    padding: 5px;
+    border-top: 1px dashed #ddd;
+}
+
+/* Properties/Topology */
+#shape-topology {
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+
+.property-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.property-table th, .property-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.property-table th {
+    font-weight: 600;
+    background-color: #e6e6e6;
+}
+
+.property-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.property-item {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.property-name {
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 4px;
+}
+
+.property-value {
+    margin-left: 12px;
+}
+
+@media (max-width: 768px) {
+    .tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 5px;
+    }
+    
+    .tab-btn {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+}
