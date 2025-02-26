@@ -62,6 +62,24 @@ const shapeDefinitions = {
     cube: {
         type: 'cube',
         size: 3
+    },
+    cylinder: {
+        type: 'cylinder',
+        radius: 2,
+        height: 4,
+        radiusSegments: 32
+    },
+    cone: {
+        type: 'cone',
+        radius: 2,
+        height: 4,
+        radiusSegments: 32
+    },
+    sphere: {
+        type: 'sphere',
+        radius: 2,
+        widthSegments: 32,
+        heightSegments: 16
     }
 };
 
@@ -227,18 +245,6 @@ function setupMobileControls() {
         setActiveButton('triangularPrism1-btn');
     });
     
-    document.getElementById('mobile-triangularPrism2-btn').addEventListener('click', () => {
-        loadShape('triangularPrism2');
-        setActiveButton('mobile-triangularPrism2-btn');
-        setActiveButton('triangularPrism2-btn');
-    });
-    
-    document.getElementById('mobile-triangularPrism3-btn').addEventListener('click', () => {
-        loadShape('triangularPrism3');
-        setActiveButton('mobile-triangularPrism3-btn');
-        setActiveButton('triangularPrism3-btn');
-    });
-    
     document.getElementById('mobile-rectangularPrism-btn').addEventListener('click', () => {
         loadShape('rectangularPrism');
         setActiveButton('mobile-rectangularPrism-btn');
@@ -249,6 +255,24 @@ function setupMobileControls() {
         loadShape('cube');
         setActiveButton('mobile-cube-btn');
         setActiveButton('cube-btn');
+    });
+    
+    document.getElementById('mobile-cylinder-btn').addEventListener('click', () => {
+        loadShape('cylinder');
+        setActiveButton('mobile-cylinder-btn');
+        setActiveButton('cylinder-btn');
+    });
+    
+    document.getElementById('mobile-cone-btn').addEventListener('click', () => {
+        loadShape('cone');
+        setActiveButton('mobile-cone-btn');
+        setActiveButton('cone-btn');
+    });
+    
+    document.getElementById('mobile-sphere-btn').addEventListener('click', () => {
+        loadShape('sphere');
+        setActiveButton('mobile-sphere-btn');
+        setActiveButton('sphere-btn');
     });
     
     document.getElementById('mobile-custom-btn').addEventListener('click', () => {
@@ -2027,6 +2051,668 @@ function updateShapeDetails(shape) {
         // Update desktop and mobile topology panels
         topologyDiv.innerHTML = topologyHTML;
         if (mobileTopologyDiv) mobileTopologyDiv.innerHTML = topologyHTML;
+    } else if (shape.type === 'cylinder') {
+        const { radius, height } = shape.dimensions;
+        
+        // Calculate volume and surface area
+        const volume = Math.PI * radius * radius * height;
+        const lateralSurfaceArea = 2 * Math.PI * radius * height;
+        const baseArea = Math.PI * radius * radius;
+        const surfaceArea = lateralSurfaceArea + 2 * baseArea;
+        
+        // Generate HTML content for dimensions
+        const dimensionsHTML = `
+            <p><strong>Radius:</strong> ${radius} units</p>
+            <p><strong>Height:</strong> ${height} units</p>
+            <p><strong>Diameter:</strong> ${2 * radius} units</p>
+        `;
+        
+        // Generate HTML content for properties
+        const propertiesHTML = `
+            <p><strong>Volume:</strong> ${volume.toFixed(2)} cubic units</p>
+            <p><strong>Surface Area:</strong> ${surfaceArea.toFixed(2)} square units</p>
+            <p><strong>Lateral Surface Area:</strong> ${lateralSurfaceArea.toFixed(2)} square units</p>
+            <p><strong>Base Area:</strong> ${baseArea.toFixed(2)} square units (each base)</p>
+            <p><strong>Circumference of Base:</strong> ${(2 * Math.PI * radius).toFixed(2)} units</p>
+        `;
+        
+        // Generate HTML content for formulas
+        const formulasHTML = `
+            <h4>Cylinder Formulas</h4>
+            <p><strong>Volume:</strong></p>
+            <span class="formula">V = πr²h</span>
+            <span class="formula">V = π × ${radius}² × ${height} = ${volume.toFixed(2)} cubic units</span>
+            
+            <p><strong>Surface Area:</strong></p>
+            <span class="formula">SA = 2πrh + 2πr²</span>
+            <span class="formula">SA = 2π × ${radius} × ${height} + 2π × ${radius}² = ${surfaceArea.toFixed(2)} square units</span>
+            
+            <p><strong>Lateral Surface Area:</strong></p>
+            <span class="formula">LSA = 2πrh</span>
+            <span class="formula">LSA = 2π × ${radius} × ${height} = ${lateralSurfaceArea.toFixed(2)} square units</span>
+            
+            <p><strong>Base Area:</strong></p>
+            <span class="formula">A = πr²</span>
+            <span class="formula">A = π × ${radius}² = ${baseArea.toFixed(2)} square units</span>
+        `;
+        
+        // Create HTML for the net diagram
+        const netHTML = `
+            <svg width="100%" height="350" viewBox="0 0 500 350" preserveAspectRatio="xMidYMid meet" style="display: block; min-width: 100%; max-width: 100%; margin: 0 auto;">
+                <!-- Cylinder net showing rectangular lateral surface and two circular bases -->
+                <circle cx="110" cy="180" r="${radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                
+                <rect x="150" y="80" width="${2 * Math.PI * radius * 10}" height="${height * 10}" fill="#bbdefb" stroke="#2196f3" stroke-width="2"/>
+                
+                <circle cx="390" cy="180" r="${radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                
+                <!-- Grid lines for the rectangular surface -->
+                ${
+                    // Create the grid lines for the cylinder lateral surface
+                    (function() {
+                        let lines = '';
+                        const rectWidth = 2 * Math.PI * radius * 10;
+                        const rectHeight = height * 10;
+                        const startX = 150;
+                        const startY = 80;
+                        
+                        // Vertical grid lines at intervals
+                        for (let i = 1; i < 10; i++) {
+                            const x = startX + (rectWidth * i / 10);
+                            lines += `<line x1="${x}" y1="${startY}" x2="${x}" y2="${startY + rectHeight}" 
+                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
+                        }
+                        
+                        // Horizontal grid lines at intervals
+                        for (let i = 1; i < height; i++) {
+                            const y = startY + (rectHeight * i / height);
+                            lines += `<line x1="${startX}" y1="${y}" x2="${startX + rectWidth}" y2="${y}" 
+                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
+                        }
+                        
+                        // Internal grid for the circular bases
+                        // Draw radial lines
+                        const leftCenter = 110;
+                        const rightCenter = 390;
+                        const centerY = 180;
+                        const baseRadius = radius * 10;
+                        
+                        for (let i = 0; i < 8; i++) {
+                            const angle = (i / 8) * Math.PI * 2;
+                            const x1 = leftCenter + baseRadius * Math.cos(angle);
+                            const y1 = centerY + baseRadius * Math.sin(angle);
+                            const x2 = rightCenter + baseRadius * Math.cos(angle);
+                            const y2 = centerY + baseRadius * Math.sin(angle);
+                            
+                            lines += `<line x1="${leftCenter}" y1="${centerY}" x2="${x1}" y2="${y1}" 
+                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
+                            lines += `<line x1="${rightCenter}" y1="${centerY}" x2="${x2}" y2="${y2}" 
+                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
+                        }
+                        
+                        // Circular grid lines
+                        for (let i = 1; i < 3; i++) {
+                            const innerRadius = baseRadius * i / 3;
+                            lines += `<circle cx="${leftCenter}" cy="${centerY}" r="${innerRadius}" 
+                                       fill="none" stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
+                            lines += `<circle cx="${rightCenter}" cy="${centerY}" r="${innerRadius}" 
+                                       fill="none" stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
+                        }
+                        
+                        return lines;
+                    })()
+                }
+                
+                <!-- Labels -->
+                <rect x="80" y="130" width="60" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="110" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Base 1</text>
+                
+                <rect x="240" y="68" width="60" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="270" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Lateral Surface</text>
+                
+                <rect x="360" y="130" width="60" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="390" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Base 2</text>
+                
+                <!-- Folding lines -->
+                <line x1="150" y1="80" x2="150" y2="${80 + height * 10}" stroke="#000" stroke-width="1.5" stroke-dasharray="5,3"/>
+                <line x1="${150 + 2 * Math.PI * radius * 10}" y1="80" x2="${150 + 2 * Math.PI * radius * 10}" y2="${80 + height * 10}" stroke="#000" stroke-width="1.5" stroke-dasharray="5,3"/>
+                
+                <!-- Dimensions -->
+                <line x1="110" y1="230" x2="110" y2="260" stroke="#000" stroke-width="1"/>
+                <line x1="90" y1="245" x2="130" y2="245" stroke="#000" stroke-width="1"/>
+                <text x="110" y="265" text-anchor="middle" font-size="12" fill="#000">r=${radius} units</text>
+                
+                <line x1="130" y1="80" x2="130" y2="${80 + height * 10}" stroke="#000" stroke-width="1"/>
+                <text x="120" y="${80 + height * 5}" transform="rotate(90, 120, ${80 + height * 5})" text-anchor="middle" font-size="12" fill="#000">h=${height} units</text>
+                
+                <line x1="150" y1="60" x2="${150 + 2 * Math.PI * radius * 10}" y2="60" stroke="#000" stroke-width="1"/>
+                <text x="${150 + Math.PI * radius * 10}" y="50" text-anchor="middle" font-size="12" fill="#000">Circumference = 2πr = ${(2 * Math.PI * radius).toFixed(2)} units</text>
+            </svg>
+            
+            <p class="net-description">Net of a cylinder showing the two circular bases (radius ${radius} units) and the rectangular lateral surface (${height} × ${(2 * Math.PI * radius).toFixed(2)} units)</p>
+            
+            <div class="net-explanation">
+                <p><strong>Understanding the Net:</strong> The net of a cylinder consists of:</p>
+                <ul>
+                    <li>Two identical circular <span class="property-highlight">bases</span> with radius ${radius} units</li>
+                    <li>One rectangular <span class="property-highlight">lateral surface</span> with:
+                        <ul>
+                            <li>Height = cylinder height = ${height} units</li>
+                            <li>Width = circumference of base = 2πr = ${(2 * Math.PI * radius).toFixed(2)} units</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p>When folded along the dashed lines, this net forms a complete cylinder. The lateral surface wraps around to connect the two circular bases.</p>
+            </div>
+        `;
+        
+        // Update desktop panels
+        dimensionsDiv.innerHTML = dimensionsHTML;
+        propertiesDiv.innerHTML = propertiesHTML;
+        formulasDiv.innerHTML = formulasHTML;
+        netImageContainer.innerHTML = netHTML;
+        
+        // Update mobile panels if they exist
+        if (mobileDimensionsDiv) mobileDimensionsDiv.innerHTML = dimensionsHTML;
+        if (mobilePropertiesDiv) mobilePropertiesDiv.innerHTML = propertiesHTML;
+        if (mobileFormulasDiv) mobileFormulasDiv.innerHTML = formulasHTML;
+        if (mobileNetImageContainer) mobileNetImageContainer.innerHTML = netHTML;
+        
+        // Generate topology HTML for cylinder
+        const topologyHTML = `
+            <h4>Cylinder Properties</h4>
+            <div class="property-item">
+                <div class="property-name">Definition</div>
+                <div class="property-value">A cylinder is a 3D solid with two parallel circular bases connected by a curved lateral surface.</div>
+            </div>
+            
+            <div class="property-item">
+                <div class="property-name">Topology</div>
+                <div class="property-value">
+                    <ul>
+                        <li>Number of Faces: 3 (2 circular bases + 1 curved lateral surface)</li>
+                        <li>Number of Edges: 2 circular edges</li>
+                        <li>Number of Vertices: 0 (a smooth curved surface has no vertices)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="property-item">
+                <div class="property-name">Special Properties</div>
+                <div class="property-value">
+                    <ul>
+                        <li>Cross-sections parallel to the bases are circles</li>
+                        <li>Cross-sections through the axis of symmetry are rectangles</li>
+                        <li>The cylinder has infinite rotational symmetry around its axis</li>
+                        <li>The lateral surface, when unfolded, forms a rectangle</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="property-item">
+                <div class="property-name">Applications</div>
+                <div class="property-value">
+                    <ul>
+                        <li>Cylinders are used in many real-world objects like cans, pipes, and tanks</li>
+                        <li>Cylindrical containers maximize volume for a given amount of material</li>
+                        <li>The cylinder is an example of a surface of revolution (created by rotating a rectangle around an axis)</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        // Update desktop and mobile topology panels
+        topologyDiv.innerHTML = topologyHTML;
+        if (mobileTopologyDiv) mobileTopologyDiv.innerHTML = topologyHTML;
+        
+    } else if (shape.type === 'cone') {
+        const { radius, height } = shape.dimensions;
+        
+        // Calculate slant height using Pythagorean theorem
+        const slantHeight = Math.sqrt(radius * radius + height * height);
+        
+        // Calculate volume and surface area
+        const volume = (1/3) * Math.PI * radius * radius * height;
+        const baseArea = Math.PI * radius * radius;
+        const lateralSurfaceArea = Math.PI * radius * slantHeight;
+        const surfaceArea = lateralSurfaceArea + baseArea;
+        
+        // Generate HTML content for dimensions
+        const dimensionsHTML = `
+            <p><strong>Radius:</strong> ${radius} units</p>
+            <p><strong>Height:</strong> ${height} units</p>
+            <p><strong>Slant Height:</strong> ${slantHeight.toFixed(2)} units</p>
+        `;
+        
+        // Generate HTML content for properties
+        const propertiesHTML = `
+            <p><strong>Volume:</strong> ${volume.toFixed(2)} cubic units</p>
+            <p><strong>Surface Area:</strong> ${surfaceArea.toFixed(2)} square units</p>
+            <p><strong>Lateral Surface Area:</strong> ${lateralSurfaceArea.toFixed(2)} square units</p>
+            <p><strong>Base Area:</strong> ${baseArea.toFixed(2)} square units</p>
+            <p><strong>Base Circumference:</strong> ${(2 * Math.PI * radius).toFixed(2)} units</p>
+        `;
+        
+        // Generate HTML content for formulas
+        const formulasHTML = `
+            <h4>Cone Formulas</h4>
+            <p><strong>Volume:</strong></p>
+            <span class="formula">V = (1/3)πr²h</span>
+            <span class="formula">V = (1/3)π × ${radius}² × ${height} = ${volume.toFixed(2)} cubic units</span>
+            
+            <p><strong>Slant Height:</strong></p>
+            <span class="formula">l = √(r² + h²)</span>
+            <span class="formula">l = √(${radius}² + ${height}²) = ${slantHeight.toFixed(2)} units</span>
+            
+            <p><strong>Surface Area:</strong></p>
+            <span class="formula">SA = πr² + πrl</span>
+            <span class="formula">SA = πr² + πrl = ${baseArea.toFixed(2)} + ${lateralSurfaceArea.toFixed(2)} = ${surfaceArea.toFixed(2)} square units</span>
+            
+            <p><strong>Lateral Surface Area:</strong></p>
+            <span class="formula">LSA = πrl</span>
+            <span class="formula">LSA = π × ${radius} × ${slantHeight.toFixed(2)} = ${lateralSurfaceArea.toFixed(2)} square units</span>
+            
+            <p><strong>Angle of Apex:</strong></p>
+            <span class="formula">θ = 2 × tan⁻¹(r/h)</span>
+            <span class="formula">θ = 2 × tan⁻¹(${radius}/${height}) = ${(2 * Math.atan(radius/height) * 180 / Math.PI).toFixed(2)}°</span>
+        `;
+        
+        // Create HTML for the net diagram
+        const netHTML = `
+            <svg width="100%" height="350" viewBox="0 0 500 350" preserveAspectRatio="xMidYMid meet" style="display: block; min-width: 100%; max-width: 100%; margin: 0 auto;">
+                <!-- Cone net showing circular base and sector for lateral surface -->
+                <circle cx="150" cy="200" r="${radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                
+                <!-- Circular sector for lateral surface -->
+                <!-- The central angle of the sector is 2π×r/slant height -->
+                <path d="M 350,180 L 350,${180 + slantHeight * 10} A ${radius * 10 * 2 * Math.PI / slantHeight} ${radius * 10 * 2 * Math.PI / slantHeight} 0 0 1 350,180 Z" 
+                      fill="#bbdefb" stroke="#2196f3" stroke-width="2" transform="rotate(${-180 * radius / slantHeight}, 350, 180)"/>
+                
+                <!-- Grid lines for the base -->
+                ${
+                    // Create grid lines for base
+                    (function() {
+                        let lines = '';
+                        const centerX = 150;
+                        const centerY = 200;
+                        const baseRadius = radius * 10;
+                        
+                        // Radial grid lines
+                        for (let i = 0; i < 8; i++) {
+                            const angle = (i / 8) * Math.PI * 2;
+                            const x = centerX + baseRadius * Math.cos(angle);
+                            const y = centerY + baseRadius * Math.sin(angle);
+                            
+                            lines += `<line x1="${centerX}" y1="${centerY}" x2="${x}" y2="${y}" 
+                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
+                        }
+                        
+                        // Circular grid lines
+                        for (let i = 1; i < 4; i++) {
+                            const innerRadius = baseRadius * i / 4;
+                            lines += `<circle cx="${centerX}" cy="${centerY}" r="${innerRadius}" 
+                                       fill="none" stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
+                        }
+                        
+                        return lines;
+                    })()
+                }
+                
+                <!-- Grid lines for sector - curved lines and radial lines -->
+                ${
+                    // Create grid lines for sector
+                    (function() {
+                        let lines = '';
+                        const centerX = 350;
+                        const centerY = 180;
+                        const sectorRadius = slantHeight * 10;
+                        const angle = 2 * Math.PI * radius / slantHeight;
+                        
+                        // Radial grid lines for sector
+                        for (let i = 1; i < 6; i++) {
+                            const subAngle = angle * i / 6 - angle/2;
+                            const x = centerX + sectorRadius * Math.sin(subAngle);
+                            const y = centerY + sectorRadius * Math.cos(subAngle);
+                            
+                            lines += `<line x1="${centerX}" y1="${centerY}" x2="${x}" y2="${y}" 
+                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
+                        }
+                        
+                        // Circular arc grid lines for sector
+                        for (let i = 1; i < 5; i++) {
+                            const innerRadius = sectorRadius * i / 5;
+                            const arcStart = centerX + innerRadius * Math.sin(-angle/2);
+                            const arcStartY = centerY + innerRadius * Math.cos(-angle/2);
+                            const arcEnd = centerX + innerRadius * Math.sin(angle/2);
+                            const arcEndY = centerY + innerRadius * Math.cos(angle/2);
+                            
+                            lines += `<path d="M ${arcStart},${arcStartY} A ${innerRadius} ${innerRadius} 0 0 1 ${arcEnd},${arcEndY}" 
+                                       fill="none" stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
+                        }
+                        
+                        return lines;
+                    })()
+                }
+                
+                <!-- Labels -->
+                <rect x="120" y="150" width="60" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="150" y="162" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Base</text>
+                
+                <rect x="320" y="230" width="60" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="350" y="242" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Lateral Surface</text>
+                
+                <!-- Dimensions -->
+                <line x1="150" y1="250" x2="150" y2="280" stroke="#000" stroke-width="1"/>
+                <line x1="130" y1="265" x2="170" y2="265" stroke="#000" stroke-width="1"/>
+                <text x="150" y="295" text-anchor="middle" font-size="12" fill="#000">r=${radius} units</text>
+                
+                <line x1="350" y1="180" x2="${350 + slantHeight * 10 * 0.5}" y2="${180 + slantHeight * 10 * 0.866}" stroke="#000" stroke-width="1" stroke-dasharray="5,3"/>
+                <text x="${350 + slantHeight * 5 * 0.5}" y="${180 + slantHeight * 5 * 0.866 - 10}" text-anchor="middle" font-size="12" fill="#000">l=${slantHeight.toFixed(2)} units</text>
+                
+                <line x1="200" y1="200" x2="300" y2="200" stroke="#000" stroke-width="1"/>
+                <text x="250" y="190" text-anchor="middle" font-size="12" fill="#000">Cone height = ${height} units</text>
+            </svg>
+            
+            <p class="net-description">Net of a cone showing the circular base (radius ${radius} units) and the sector that forms the lateral surface</p>
+            
+            <div class="net-explanation">
+                <p><strong>Understanding the Net:</strong> The net of a cone consists of:</p>
+                <ul>
+                    <li>One circular <span class="property-highlight">base</span> with radius ${radius} units</li>
+                    <li>One circular sector forming the <span class="property-highlight">lateral surface</span> with:
+                        <ul>
+                            <li>Radius = slant height = ${slantHeight.toFixed(2)} units</li>
+                            <li>Arc length = circumference of base = 2πr = ${(2 * Math.PI * radius).toFixed(2)} units</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p>When the sector is folded around to form a cone, the straight edges of the sector meet, and the curved edge forms the circular base of the cone. The apex angle of the cone is ${(2 * Math.atan(radius/height) * 180 / Math.PI).toFixed(2)}°.</p>
+            </div>
+        `;
+        
+        // Update desktop panels
+        dimensionsDiv.innerHTML = dimensionsHTML;
+        propertiesDiv.innerHTML = propertiesHTML;
+        formulasDiv.innerHTML = formulasHTML;
+        netImageContainer.innerHTML = netHTML;
+        
+        // Update mobile panels if they exist
+        if (mobileDimensionsDiv) mobileDimensionsDiv.innerHTML = dimensionsHTML;
+        if (mobilePropertiesDiv) mobilePropertiesDiv.innerHTML = propertiesHTML;
+        if (mobileFormulasDiv) mobileFormulasDiv.innerHTML = formulasHTML;
+        if (mobileNetImageContainer) mobileNetImageContainer.innerHTML = netHTML;
+        
+        // Generate topology HTML for cone
+        const topologyHTML = `
+            <h4>Cone Properties</h4>
+            <div class="property-item">
+                <div class="property-name">Definition</div>
+                <div class="property-value">A cone is a 3D solid with a circular base and a single vertex (apex) connected to every point on the base by straight line segments.</div>
+            </div>
+            
+            <div class="property-item">
+                <div class="property-name">Topology</div>
+                <div class="property-value">
+                    <ul>
+                        <li>Number of Faces: 2 (1 circular base + 1 curved lateral surface)</li>
+                        <li>Number of Edges: 1 circular edge</li>
+                        <li>Number of Vertices: 1 (the apex)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="property-item">
+                <div class="property-name">Cross-Sections</div>
+                <div class="property-value">
+                    <ul>
+                        <li>Parallel to the base: circles (decreasing in size toward the apex)</li>
+                        <li>Through the apex and center of base: isosceles triangles</li>
+                        <li>At an angle: ellipses, parabolas, or hyperbolas (conic sections)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="property-item">
+                <div class="property-name">Special Properties</div>
+                <div class="property-value">
+                    <ul>
+                        <li>The apex is equidistant from any point on the base perimeter when measured along the lateral surface</li>
+                        <li>The cone has rotational symmetry around its central axis</li>
+                        <li>The lateral surface, when unfolded, forms a sector of a circle</li>
+                        <li>Angle at the apex: ${(2 * Math.atan(radius/height) * 180 / Math.PI).toFixed(2)}°</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        // Update desktop and mobile topology panels
+        topologyDiv.innerHTML = topologyHTML;
+        if (mobileTopologyDiv) mobileTopologyDiv.innerHTML = topologyHTML;
+        
+    } else if (shape.type === 'sphere') {
+        const { radius } = shape.dimensions;
+        
+        // Calculate volume and surface area
+        const volume = (4/3) * Math.PI * Math.pow(radius, 3);
+        const surfaceArea = 4 * Math.PI * Math.pow(radius, 2);
+        const greatCircleArea = Math.PI * Math.pow(radius, 2);
+        
+        // Generate HTML content for dimensions
+        const dimensionsHTML = `
+            <p><strong>Radius:</strong> ${radius} units</p>
+            <p><strong>Diameter:</strong> ${2 * radius} units</p>
+            <p><strong>Circumference:</strong> ${(2 * Math.PI * radius).toFixed(2)} units</p>
+        `;
+        
+        // Generate HTML content for properties
+        const propertiesHTML = `
+            <p><strong>Volume:</strong> ${volume.toFixed(2)} cubic units</p>
+            <p><strong>Surface Area:</strong> ${surfaceArea.toFixed(2)} square units</p>
+            <p><strong>Great Circle Area:</strong> ${greatCircleArea.toFixed(2)} square units</p>
+            <p><strong>Great Circle Circumference:</strong> ${(2 * Math.PI * radius).toFixed(2)} units</p>
+        `;
+        
+        // Generate HTML content for formulas
+        const formulasHTML = `
+            <h4>Sphere Formulas</h4>
+            <p><strong>Volume:</strong></p>
+            <span class="formula">V = (4/3)πr³</span>
+            <span class="formula">V = (4/3)π × ${radius}³ = ${volume.toFixed(2)} cubic units</span>
+            
+            <p><strong>Surface Area:</strong></p>
+            <span class="formula">SA = 4πr²</span>
+            <span class="formula">SA = 4π × ${radius}² = ${surfaceArea.toFixed(2)} square units</span>
+            
+            <p><strong>Great Circle:</strong></p>
+            <span class="formula">Area = πr²</span>
+            <span class="formula">Area = π × ${radius}² = ${greatCircleArea.toFixed(2)} square units</span>
+            
+            <p><strong>Great Circle Circumference:</strong></p>
+            <span class="formula">C = 2πr</span>
+            <span class="formula">C = 2π × ${radius} = ${(2 * Math.PI * radius).toFixed(2)} units</span>
+            
+            <div class="educational-note">
+                <p>A sphere is the only 3D shape that has a fixed width in all directions. The surface area of a sphere is exactly 4 times the area of its great circle.</p>
+            </div>
+        `;
+        
+        // Create HTML for sphere projection (since a sphere doesn't have a traditional net)
+        const netHTML = `
+            <svg width="100%" height="400" viewBox="0 0 500 400" preserveAspectRatio="xMidYMid meet" style="display: block; min-width: 100%; max-width: 100%; margin: 0 auto;">
+                <!-- Sphere projections: globe view and stereographic projection -->
+                
+                <!-- 3D globe representation -->
+                <circle cx="150" cy="200" r="${radius * 10}" fill="#bbdefb" stroke="#2196f3" stroke-width="2"/>
+                
+                <!-- Equator line -->
+                <ellipse cx="150" cy="200" rx="${radius * 10}" ry="${radius * 3}" stroke="#2196f3" stroke-width="1.5" fill="none"/>
+                
+                <!-- Prime meridian -->
+                <line x1="150" y1="${200 - radius * 10}" x2="150" y2="${200 + radius * 10}" stroke="#2196f3" stroke-width="1.5"/>
+                
+                <!-- Grid lines for latitude and longitude -->
+                ${
+                    // Create grid lines for the globe
+                    (function() {
+                        let lines = '';
+                        const centerX = 150;
+                        const centerY = 200;
+                        const sphereRadius = radius * 10;
+                        
+                        // Latitude lines (parallel to equator)
+                        for (let i = 1; i < 4; i++) {
+                            const yOffset = sphereRadius * i / 4;
+                            lines += `<ellipse cx="${centerX}" cy="${centerY - yOffset}" rx="${sphereRadius}" ry="${sphereRadius * 0.3 * (4-i)/4}" 
+                                      stroke="#000" stroke-width="0.5" stroke-opacity="0.3" fill="none"/>`;
+                            lines += `<ellipse cx="${centerX}" cy="${centerY + yOffset}" rx="${sphereRadius}" ry="${sphereRadius * 0.3 * (4-i)/4}" 
+                                      stroke="#000" stroke-width="0.5" stroke-opacity="0.3" fill="none"/>`;
+                        }
+                        
+                        // Longitude lines (meridians)
+                        for (let i = 1; i < 6; i++) {
+                            const angle = (i / 6) * Math.PI;
+                            const x1 = centerX + sphereRadius * Math.cos(angle);
+                            const y1 = centerY - sphereRadius * 0.3 * Math.sin(angle);
+                            const x2 = centerX + sphereRadius * Math.cos(angle + Math.PI);
+                            const y2 = centerY - sphereRadius * 0.3 * Math.sin(angle + Math.PI);
+                            
+                            lines += `<ellipse cx="${centerX}" cy="${centerY}" rx="${sphereRadius * Math.sin(angle)}" ry="${sphereRadius}" 
+                                      transform="rotate(${90 - i * 30}, ${centerX}, ${centerY})"
+                                      stroke="#000" stroke-width="0.5" stroke-opacity="0.3" fill="none"/>`;
+                        }
+                        
+                        return lines;
+                    })()
+                }
+                
+                <!-- Highlight great circle -->
+                <ellipse cx="150" cy="200" rx="${radius * 10}" ry="${radius * 10}" stroke="#e74c3c" stroke-width="1.5" fill="none"/>
+                
+                <!-- Map projection (mercator-style) -->
+                <rect x="300" y="${200 - radius * 10}" width="${2 * Math.PI * radius * 5}" height="${2 * radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                
+                <!-- Grid lines for map projection -->
+                ${
+                    // Create grid lines for the map projection
+                    (function() {
+                        let lines = '';
+                        const startX = 300;
+                        const startY = 200 - radius * 10;
+                        const width = 2 * Math.PI * radius * 5;
+                        const height = 2 * radius * 10;
+                        
+                        // Latitude lines
+                        for (let i = 1; i < 9; i++) {
+                            const y = startY + height * i / 10;
+                            lines += `<line x1="${startX}" y1="${y}" x2="${startX + width}" y2="${y}" 
+                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
+                        }
+                        
+                        // Longitude lines
+                        for (let i = 1; i < 12; i++) {
+                            const x = startX + width * i / 12;
+                            lines += `<line x1="${x}" y1="${startY}" x2="${x}" y2="${startY + height}" 
+                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
+                        }
+                        
+                        return lines;
+                    })()
+                }
+                
+                <!-- Labels -->
+                <rect x="120" y="140" width="60" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="150" y="152" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Sphere</text>
+                
+                <rect x="120" y="165" width="120" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="150" y="177" text-anchor="start" font-size="12" font-weight="normal" fill="#e74c3c">Great Circle</text>
+                
+                <rect x="360" y="140" width="120" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="410" y="152" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Map Projection</text>
+                
+                <!-- Dimensions -->
+                <line x1="150" y1="${200 + radius * 10 + 10}" x2="150" y2="${200 + radius * 10 + 30}" stroke="#000" stroke-width="1"/>
+                <line x1="130" y1="${200 + radius * 10 + 20}" x2="170" y2="${200 + radius * 10 + 20}" stroke="#000" stroke-width="1"/>
+                <text x="150" y="${200 + radius * 10 + 45}" text-anchor="middle" font-size="12" fill="#000">r=${radius} units</text>
+                
+                <line x1="300" y1="${200 + radius * 10 + 10}" x2="${300 + 2 * Math.PI * radius * 5}" y2="${200 + radius * 10 + 10}" stroke="#000" stroke-width="1"/>
+                <text x="${300 + Math.PI * radius * 5}" y="${200 + radius * 10 + 25}" text-anchor="middle" font-size="12" fill="#000">Circumference = 2πr = ${(2 * Math.PI * radius).toFixed(2)} units</text>
+            </svg>
+            
+            <p class="net-description">Unlike polyhedra, a sphere doesn't have a flat net. Instead, we show a globe view and a map projection.</p>
+            
+            <div class="net-explanation">
+                <p><strong>Understanding Sphere Projections:</strong></p>
+                <ul>
+                    <li>A sphere is a perfectly round geometrical object in 3D space</li>
+                    <li>All points on the surface are equidistant from the center (radius = ${radius} units)</li>
+                    <li>The red circle shows a "great circle" - any circle on the sphere with the same center and radius as the sphere</li>
+                    <li>The rectangular map shows a flattened projection of the sphere's surface</li>
+                </ul>
+                <p>Unlike polyhedra, spheres cannot be unfolded into a flat net without distortion. Map projections help visualize the sphere's surface in 2D, but always introduce some form of distortion (either in area, angle, or distance).</p>
+            </div>
+        `;
+        
+        // Update desktop panels
+        dimensionsDiv.innerHTML = dimensionsHTML;
+        propertiesDiv.innerHTML = propertiesHTML;
+        formulasDiv.innerHTML = formulasHTML;
+        netImageContainer.innerHTML = netHTML;
+        
+        // Update mobile panels if they exist
+        if (mobileDimensionsDiv) mobileDimensionsDiv.innerHTML = dimensionsHTML;
+        if (mobilePropertiesDiv) mobilePropertiesDiv.innerHTML = propertiesHTML;
+        if (mobileFormulasDiv) mobileFormulasDiv.innerHTML = formulasHTML;
+        if (mobileNetImageContainer) mobileNetImageContainer.innerHTML = netHTML;
+        
+        // Generate topology HTML for sphere
+        const topologyHTML = `
+            <h4>Sphere Properties</h4>
+            <div class="property-item">
+                <div class="property-name">Definition</div>
+                <div class="property-value">A sphere is a perfectly round geometrical object in 3D space where all points on the surface are equidistant from the center.</div>
+            </div>
+            
+            <div class="property-item">
+                <div class="property-name">Topology</div>
+                <div class="property-value">
+                    <ul>
+                        <li>Number of Faces: 1 continuous curved surface</li>
+                        <li>Number of Edges: 0</li>
+                        <li>Number of Vertices: 0</li>
+                        <li>Genus: 0 (a sphere has no holes)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="property-item">
+                <div class="property-name">Special Properties</div>
+                <div class="property-value">
+                    <ul>
+                        <li>A sphere has the smallest surface area among all shapes enclosing a given volume</li>
+                        <li>All cross-sections through a sphere's center are great circles with radius = ${radius} units</li>
+                        <li>Any cross-section of a sphere is a circle (not necessarily a great circle)</li>
+                        <li>A sphere has infinite rotational symmetry around any diameter</li>
+                        <li>The shadow of a sphere is always a circle, regardless of light direction</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="property-item">
+                <div class="property-name">Interesting Facts</div>
+                <div class="property-value">
+                    <ul>
+                        <li>A sphere is a special case of an ellipsoid where all three radii are equal</li>
+                        <li>The Euler characteristic of a sphere is 2 (V - E + F = 2)</li>
+                        <li>A sphere is the only shape with a constant width in all directions</li>
+                        <li>The surface area of a sphere is exactly 4 times the area of its great circle</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        // Update desktop and mobile topology panels
+        topologyDiv.innerHTML = topologyHTML;
+        if (mobileTopologyDiv) mobileTopologyDiv.innerHTML = topologyHTML;
     }
     
     // Set up tab switching
@@ -2157,16 +2843,6 @@ function setupEventListeners() {
         setActiveButton('triangularPrism1-btn');
     });
     
-    document.getElementById('triangularPrism2-btn').addEventListener('click', () => {
-        loadShape('triangularPrism2');
-        setActiveButton('triangularPrism2-btn');
-    });
-    
-    document.getElementById('triangularPrism3-btn').addEventListener('click', () => {
-        loadShape('triangularPrism3');
-        setActiveButton('triangularPrism3-btn');
-    });
-    
     document.getElementById('rectangularPrism-btn').addEventListener('click', () => {
         loadShape('rectangularPrism');
         setActiveButton('rectangularPrism-btn');
@@ -2175,6 +2851,21 @@ function setupEventListeners() {
     document.getElementById('cube-btn').addEventListener('click', () => {
         loadShape('cube');
         setActiveButton('cube-btn');
+    });
+    
+    document.getElementById('cylinder-btn').addEventListener('click', () => {
+        loadShape('cylinder');
+        setActiveButton('cylinder-btn');
+    });
+    
+    document.getElementById('cone-btn').addEventListener('click', () => {
+        loadShape('cone');
+        setActiveButton('cone-btn');
+    });
+    
+    document.getElementById('sphere-btn').addEventListener('click', () => {
+        loadShape('sphere');
+        setActiveButton('sphere-btn');
     });
     
     document.getElementById('custom-btn').addEventListener('click', () => {
@@ -2377,6 +3068,12 @@ function parseAndGenerateShape(description) {
             shapeType = 'rectangularPrism';
         } else if (description.match(/cube/i)) {
             shapeType = 'cube';
+        } else if (description.match(/cylinder/i)) {
+            shapeType = 'cylinder';
+        } else if (description.match(/cone/i)) {
+            shapeType = 'cone';
+        } else if (description.match(/sphere|ball|circle/i)) {
+            shapeType = 'sphere';
         }
         
         if (!shapeType) {
@@ -2387,6 +3084,12 @@ function parseAndGenerateShape(description) {
                 shapeType = 'rectangularPrism';
             } else if (description.match(/equal\s*sides/i) || description.match(/all\s*sides\s*equal/i)) {
                 shapeType = 'cube';
+            } else if (description.match(/circular\s*base/i) || description.match(/round/i)) {
+                shapeType = 'cylinder';
+            } else if (description.match(/pointed|apex/i)) {
+                shapeType = 'cone';
+            } else if (description.match(/round|circular/i)) {
+                shapeType = 'sphere';
             }
         }
         
@@ -2402,6 +3105,14 @@ function parseAndGenerateShape(description) {
         const lengthMatch = description.match(/(\d+)\s*units?\s*(?:long|length)/i) || 
                           description.match(/length\s*(?:of|is|:)?\s*(\d+)\s*units?/i) ||
                           description.match(/(\d+)\s*units?\s*in\s*length/i);
+        
+        const radiusMatch = description.match(/(\d+)\s*units?\s*(?:radius)/i) || 
+                          description.match(/radius\s*(?:of|is|:)?\s*(\d+)\s*units?/i) ||
+                          description.match(/(\d+)\s*units?\s*in\s*radius/i);
+        
+        const diameterMatch = description.match(/(\d+)\s*units?\s*(?:diameter)/i) || 
+                            description.match(/diameter\s*(?:of|is|:)?\s*(\d+)\s*units?/i) ||
+                            description.match(/(\d+)\s*units?\s*in\s*diameter/i);
         
         const sidesMatch = description.match(/sides?\s*.+?(\d+)(?:.*?)and\s*(\d+)/i) || 
                          description.match(/base\s*with\s*sides\s*(\d+)(?:.*?)and\s*(\d+)/i) ||
@@ -2469,15 +3180,112 @@ function parseAndGenerateShape(description) {
             
             createShape(customShape);
             return true;
+            
+        } else if (shapeType === 'cylinder') {
+            const height = heightMatch ? parseInt(heightMatch[1]) : 
+                        (allNumbers && allNumbers.length > 0 ? parseInt(allNumbers[0]) : 4);
+            
+            let radius;
+            if (radiusMatch) {
+                radius = parseInt(radiusMatch[1]);
+            } else if (diameterMatch) {
+                radius = parseInt(diameterMatch[1]) / 2;
+            } else {
+                radius = allNumbers && allNumbers.length > 1 ? parseInt(allNumbers[1]) : 2;
+            }
+            
+            const customShape = {
+                type: 'cylinder',
+                height: height,
+                radius: radius,
+                radiusSegments: 32
+            };
+            
+            createShape(customShape);
+            return true;
+            
+        } else if (shapeType === 'cone') {
+            const height = heightMatch ? parseInt(heightMatch[1]) : 
+                        (allNumbers && allNumbers.length > 0 ? parseInt(allNumbers[0]) : 4);
+            
+            let radius;
+            if (radiusMatch) {
+                radius = parseInt(radiusMatch[1]);
+            } else if (diameterMatch) {
+                radius = parseInt(diameterMatch[1]) / 2;
+            } else {
+                radius = allNumbers && allNumbers.length > 1 ? parseInt(allNumbers[1]) : 2;
+            }
+            
+            const customShape = {
+                type: 'cone',
+                height: height,
+                radius: radius,
+                radiusSegments: 32
+            };
+            
+            createShape(customShape);
+            return true;
+            
+        } else if (shapeType === 'sphere') {
+            let radius;
+            if (radiusMatch) {
+                radius = parseInt(radiusMatch[1]);
+            } else if (diameterMatch) {
+                radius = parseInt(diameterMatch[1]) / 2;
+            } else {
+                radius = allNumbers && allNumbers.length > 0 ? parseInt(allNumbers[0]) : 2;
+            }
+            
+            const customShape = {
+                type: 'sphere',
+                radius: radius,
+                widthSegments: 32,
+                heightSegments: 16
+            };
+            
+            createShape(customShape);
+            return true;
+            
         } else {
             // Attempt to infer shape from numbers available
             if (allNumbers && allNumbers.length === 1) {
-                // One number = probably a cube
-                const customShape = {
-                    type: 'cube',
-                    size: parseInt(allNumbers[0])
-                };
-                createShape(customShape);
+                // One number = probably a sphere or cube
+                if (description.match(/round|circle/i)) {
+                    const customShape = {
+                        type: 'sphere',
+                        radius: parseInt(allNumbers[0]),
+                        widthSegments: 32,
+                        heightSegments: 16
+                    };
+                    createShape(customShape);
+                } else {
+                    const customShape = {
+                        type: 'cube',
+                        size: parseInt(allNumbers[0])
+                    };
+                    createShape(customShape);
+                }
+                return true;
+            } else if (allNumbers && allNumbers.length === 2) {
+                // Two numbers = height and radius, could be cylinder or cone
+                if (description.match(/point|tip|apex/i)) {
+                    const customShape = {
+                        type: 'cone',
+                        height: parseInt(allNumbers[0]),
+                        radius: parseInt(allNumbers[1]),
+                        radiusSegments: 32
+                    };
+                    createShape(customShape);
+                } else {
+                    const customShape = {
+                        type: 'cylinder',
+                        height: parseInt(allNumbers[0]),
+                        radius: parseInt(allNumbers[1]),
+                        radiusSegments: 32
+                    };
+                    createShape(customShape);
+                }
                 return true;
             } else if (allNumbers && allNumbers.length === 3) {
                 // Three numbers = probably a rectangular prism
@@ -2489,26 +3297,14 @@ function parseAndGenerateShape(description) {
                 };
                 createShape(customShape);
                 return true;
-            } else if (allNumbers && allNumbers.length === 2) {
-                // Two numbers = ambiguous, default to triangular prism
-                const customShape = {
-                    type: 'triangularPrism',
-                    height: parseInt(allNumbers[0]),
-                    base: {
-                        side1: parseInt(allNumbers[1]),
-                        side2: parseInt(allNumbers[1])
-                    }
-                };
-                createShape(customShape);
-                return true;
             }
             
-            alert('Unsupported shape type or not enough information. Please specify triangular prism, rectangular prism, or cube with dimensions.');
+            alert('Unsupported shape type or not enough information. Please specify a shape type like cube, cylinder, cone, sphere with dimensions.');
             return false;
         }
     } catch (error) {
         console.error('Error parsing shape description:', error);
-        alert('Could not parse shape description. Please try again with format like "Triangular prism 4 units high with base sides 3 and 5"');
+        alert('Could not parse shape description. Please try again with a format like "Cylinder 4 units high with radius 2"');
         return false;
     }
 }
@@ -2563,6 +3359,30 @@ function createShape(shapeDef) {
                 
             case 'cube':
                 currentShape = createCube(shapeDef.size);
+                break;
+                
+            case 'cylinder':
+                currentShape = createCylinder(
+                    shapeDef.radius,
+                    shapeDef.height,
+                    shapeDef.radiusSegments
+                );
+                break;
+                
+            case 'cone':
+                currentShape = createCone(
+                    shapeDef.radius,
+                    shapeDef.height,
+                    shapeDef.radiusSegments
+                );
+                break;
+                
+            case 'sphere':
+                currentShape = createSphere(
+                    shapeDef.radius,
+                    shapeDef.widthSegments,
+                    shapeDef.heightSegments
+                );
                 break;
                 
             default:
@@ -2926,6 +3746,394 @@ function createRectangularPrism(width, height, length) {
 // Create a cube
 function createCube(size) {
     return createRectangularPrism(size, size, size);
+}
+
+// Create a cylinder
+function createCylinder(radius, height, radiusSegments = 32) {
+    // Create the geometry
+    const geometry = new THREE.CylinderGeometry(radius, radius, height, radiusSegments);
+    
+    // Create material
+    const material = new THREE.MeshStandardMaterial({
+        color: 0x3498db,
+        transparent: true,
+        opacity: 0.85,
+        side: THREE.DoubleSide
+    });
+    
+    // Create edge geometry for better visibility
+    const edges = new THREE.EdgesGeometry(geometry);
+    const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
+    const edgeLines = new THREE.LineSegments(edges, edgeMaterial);
+    
+    // Add grid lines to show dimensions
+    const gridLinesMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1, transparent: true, opacity: 0.4 });
+    const gridLinesGeometry = new THREE.BufferGeometry();
+    
+    // Create circular grid lines
+    const linePositions = [];
+    
+    // Horizontal circles at different heights
+    for (let h = -height/2; h <= height/2; h += height/10) {
+        for (let i = 0; i < radiusSegments; i++) {
+            const theta1 = (i / radiusSegments) * Math.PI * 2;
+            const theta2 = ((i + 1) / radiusSegments) * Math.PI * 2;
+            
+            const x1 = radius * Math.cos(theta1);
+            const z1 = radius * Math.sin(theta1);
+            const x2 = radius * Math.cos(theta2);
+            const z2 = radius * Math.sin(theta2);
+            
+            linePositions.push(x1, h, z1, x2, h, z2);
+        }
+    }
+    
+    // Vertical lines
+    for (let i = 0; i < radiusSegments; i++) {
+        const theta = (i / radiusSegments) * Math.PI * 2;
+        const x = radius * Math.cos(theta);
+        const z = radius * Math.sin(theta);
+        
+        linePositions.push(x, -height/2, z, x, height/2, z);
+    }
+    
+    gridLinesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+    const gridLines = new THREE.LineSegments(gridLinesGeometry, gridLinesMaterial);
+    
+    // Create the main 3D mesh
+    const mainMesh = new THREE.Mesh(geometry, material);
+    
+    // Group the mesh and its edges
+    const mainGroup = new THREE.Group();
+    mainGroup.add(mainMesh);
+    mainGroup.add(edgeLines);
+    mainGroup.add(gridLines);
+    
+    // Create meshes for orthographic views
+    const topMeshGeometry = geometry.clone();
+    const frontMeshGeometry = geometry.clone();
+    const rightMeshGeometry = geometry.clone();
+    const leftMeshGeometry = geometry.clone();
+    
+    // Create meshes for different views with the same material
+    const topMesh = new THREE.Mesh(topMeshGeometry, material.clone());
+    const frontMesh = new THREE.Mesh(frontMeshGeometry, material.clone());
+    const rightMesh = new THREE.Mesh(rightMeshGeometry, material.clone());
+    const leftMesh = new THREE.Mesh(leftMeshGeometry, material.clone());
+    
+    // Add edge lines to orthographic views
+    const topEdges = new THREE.LineSegments(new THREE.EdgesGeometry(topMeshGeometry), edgeMaterial.clone());
+    const frontEdges = new THREE.LineSegments(new THREE.EdgesGeometry(frontMeshGeometry), edgeMaterial.clone());
+    const rightEdges = new THREE.LineSegments(new THREE.EdgesGeometry(rightMeshGeometry), edgeMaterial.clone());
+    const leftEdges = new THREE.LineSegments(new THREE.EdgesGeometry(leftMeshGeometry), edgeMaterial.clone());
+    
+    // Set correct rotations for orthographic views
+    // No rotation needed for top view of cylinder
+    topMesh.rotation.x = Math.PI / 2;
+    topEdges.rotation.x = Math.PI / 2;
+    
+    frontMesh.rotation.x = 0;
+    frontEdges.rotation.x = 0;
+    
+    rightMesh.rotation.y = Math.PI / 2;
+    rightEdges.rotation.y = Math.PI / 2;
+    
+    leftMesh.rotation.y = -Math.PI / 2;
+    leftEdges.rotation.y = -Math.PI / 2;
+    
+    // Group the meshes with their edges for each view
+    const topGroup = new THREE.Group();
+    topGroup.add(topMesh);
+    topGroup.add(topEdges);
+    
+    const frontGroup = new THREE.Group();
+    frontGroup.add(frontMesh);
+    frontGroup.add(frontEdges);
+    
+    const rightGroup = new THREE.Group();
+    rightGroup.add(rightMesh);
+    rightGroup.add(rightEdges);
+    
+    const leftGroup = new THREE.Group();
+    leftGroup.add(leftMesh);
+    leftGroup.add(leftEdges);
+    
+    // Create wireframe for transitions
+    const wireframe = new THREE.Mesh(geometry.clone(), wireframeMaterial);
+    mainScene.add(wireframe);
+    
+    return {
+        mainMesh: mainGroup,
+        topMesh: topGroup,
+        frontMesh: frontGroup,
+        rightMesh: rightGroup,
+        leftMesh: leftGroup,
+        wireframe,
+        dimensions: { radius, height },
+        type: 'cylinder'
+    };
+}
+
+// Create a cone
+function createCone(radius, height, radiusSegments = 32) {
+    // Create the geometry
+    const geometry = new THREE.ConeGeometry(radius, height, radiusSegments);
+    
+    // Create material
+    const material = new THREE.MeshStandardMaterial({
+        color: 0x3498db,
+        transparent: true,
+        opacity: 0.85,
+        side: THREE.DoubleSide
+    });
+    
+    // Create edge geometry for better visibility
+    const edges = new THREE.EdgesGeometry(geometry);
+    const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
+    const edgeLines = new THREE.LineSegments(edges, edgeMaterial);
+    
+    // Add grid lines to show dimensions
+    const gridLinesMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1, transparent: true, opacity: 0.4 });
+    const gridLinesGeometry = new THREE.BufferGeometry();
+    
+    // Create circular grid lines
+    const linePositions = [];
+    
+    // Horizontal circles at different heights
+    for (let h = -height/2; h <= height/2; h += height/8) {
+        // Calculate the radius at this height
+        const heightRatio = (h + height/2) / height;
+        const radiusAtHeight = radius * (1 - heightRatio);
+        
+        if (radiusAtHeight > 0.01) {
+            for (let i = 0; i < radiusSegments; i++) {
+                const theta1 = (i / radiusSegments) * Math.PI * 2;
+                const theta2 = ((i + 1) / radiusSegments) * Math.PI * 2;
+                
+                const x1 = radiusAtHeight * Math.cos(theta1);
+                const z1 = radiusAtHeight * Math.sin(theta1);
+                const x2 = radiusAtHeight * Math.cos(theta2);
+                const z2 = radiusAtHeight * Math.sin(theta2);
+                
+                linePositions.push(x1, h, z1, x2, h, z2);
+            }
+        }
+    }
+    
+    // Vertical lines from base to apex
+    for (let i = 0; i < radiusSegments; i += 4) {
+        const theta = (i / radiusSegments) * Math.PI * 2;
+        const x = radius * Math.cos(theta);
+        const z = radius * Math.sin(theta);
+        
+        linePositions.push(x, -height/2, z, 0, height/2, 0);
+    }
+    
+    gridLinesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+    const gridLines = new THREE.LineSegments(gridLinesGeometry, gridLinesMaterial);
+    
+    // Create the main 3D mesh
+    const mainMesh = new THREE.Mesh(geometry, material);
+    
+    // Group the mesh and its edges
+    const mainGroup = new THREE.Group();
+    mainGroup.add(mainMesh);
+    mainGroup.add(edgeLines);
+    mainGroup.add(gridLines);
+    
+    // Create meshes for orthographic views
+    const topMeshGeometry = geometry.clone();
+    const frontMeshGeometry = geometry.clone();
+    const rightMeshGeometry = geometry.clone();
+    const leftMeshGeometry = geometry.clone();
+    
+    // Create meshes for different views with the same material
+    const topMesh = new THREE.Mesh(topMeshGeometry, material.clone());
+    const frontMesh = new THREE.Mesh(frontMeshGeometry, material.clone());
+    const rightMesh = new THREE.Mesh(rightMeshGeometry, material.clone());
+    const leftMesh = new THREE.Mesh(leftMeshGeometry, material.clone());
+    
+    // Add edge lines to orthographic views
+    const topEdges = new THREE.LineSegments(new THREE.EdgesGeometry(topMeshGeometry), edgeMaterial.clone());
+    const frontEdges = new THREE.LineSegments(new THREE.EdgesGeometry(frontMeshGeometry), edgeMaterial.clone());
+    const rightEdges = new THREE.LineSegments(new THREE.EdgesGeometry(rightMeshGeometry), edgeMaterial.clone());
+    const leftEdges = new THREE.LineSegments(new THREE.EdgesGeometry(leftMeshGeometry), edgeMaterial.clone());
+    
+    // Set correct rotations for orthographic views
+    topMesh.rotation.x = Math.PI / 2;
+    topEdges.rotation.x = Math.PI / 2;
+    
+    // No rotation needed for front view
+    
+    rightMesh.rotation.y = Math.PI / 2;
+    rightEdges.rotation.y = Math.PI / 2;
+    
+    leftMesh.rotation.y = -Math.PI / 2;
+    leftEdges.rotation.y = -Math.PI / 2;
+    
+    // Group the meshes with their edges for each view
+    const topGroup = new THREE.Group();
+    topGroup.add(topMesh);
+    topGroup.add(topEdges);
+    
+    const frontGroup = new THREE.Group();
+    frontGroup.add(frontMesh);
+    frontGroup.add(frontEdges);
+    
+    const rightGroup = new THREE.Group();
+    rightGroup.add(rightMesh);
+    rightGroup.add(rightEdges);
+    
+    const leftGroup = new THREE.Group();
+    leftGroup.add(leftMesh);
+    leftGroup.add(leftEdges);
+    
+    // Create wireframe for transitions
+    const wireframe = new THREE.Mesh(geometry.clone(), wireframeMaterial);
+    mainScene.add(wireframe);
+    
+    return {
+        mainMesh: mainGroup,
+        topMesh: topGroup,
+        frontMesh: frontGroup,
+        rightMesh: rightGroup,
+        leftMesh: leftGroup,
+        wireframe,
+        dimensions: { radius, height },
+        type: 'cone'
+    };
+}
+
+// Create a sphere
+function createSphere(radius, widthSegments = 32, heightSegments = 16) {
+    // Create the geometry
+    const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+    
+    // Create material
+    const material = new THREE.MeshStandardMaterial({
+        color: 0x3498db,
+        transparent: true,
+        opacity: 0.85,
+        side: THREE.DoubleSide
+    });
+    
+    // Create edge geometry for better visibility
+    const edges = new THREE.EdgesGeometry(geometry);
+    const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
+    const edgeLines = new THREE.LineSegments(edges, edgeMaterial);
+    
+    // Add grid lines to show dimensions
+    const gridLinesMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1, transparent: true, opacity: 0.4 });
+    const gridLinesGeometry = new THREE.BufferGeometry();
+    
+    // Create grid lines for latitude and longitude
+    const linePositions = [];
+    
+    // Latitude lines (horizontal circles)
+    const latitudeSteps = 8;
+    for (let i = 1; i < latitudeSteps; i++) {
+        const phi = (i / latitudeSteps) * Math.PI;
+        const radiusAtPhi = radius * Math.sin(phi);
+        const y = radius * Math.cos(phi);
+        
+        for (let j = 0; j < widthSegments; j++) {
+            const theta1 = (j / widthSegments) * Math.PI * 2;
+            const theta2 = ((j + 1) / widthSegments) * Math.PI * 2;
+            
+            const x1 = radiusAtPhi * Math.cos(theta1);
+            const z1 = radiusAtPhi * Math.sin(theta1);
+            const x2 = radiusAtPhi * Math.cos(theta2);
+            const z2 = radiusAtPhi * Math.sin(theta2);
+            
+            linePositions.push(x1, y, z1, x2, y, z2);
+        }
+    }
+    
+    // Longitude lines (vertical half-circles)
+    const longitudeSteps = 12;
+    for (let i = 0; i < longitudeSteps; i++) {
+        const theta = (i / longitudeSteps) * Math.PI * 2;
+        
+        for (let j = 0; j < heightSegments; j++) {
+            const phi1 = (j / heightSegments) * Math.PI;
+            const phi2 = ((j + 1) / heightSegments) * Math.PI;
+            
+            const y1 = radius * Math.cos(phi1);
+            const y2 = radius * Math.cos(phi2);
+            
+            const radiusAtPhi1 = radius * Math.sin(phi1);
+            const radiusAtPhi2 = radius * Math.sin(phi2);
+            
+            const x1 = radiusAtPhi1 * Math.cos(theta);
+            const z1 = radiusAtPhi1 * Math.sin(theta);
+            const x2 = radiusAtPhi2 * Math.cos(theta);
+            const z2 = radiusAtPhi2 * Math.sin(theta);
+            
+            linePositions.push(x1, y1, z1, x2, y2, z2);
+        }
+    }
+    
+    gridLinesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+    const gridLines = new THREE.LineSegments(gridLinesGeometry, gridLinesMaterial);
+    
+    // Create the main 3D mesh
+    const mainMesh = new THREE.Mesh(geometry, material);
+    
+    // Group the mesh and its edges
+    const mainGroup = new THREE.Group();
+    mainGroup.add(mainMesh);
+    mainGroup.add(edgeLines);
+    mainGroup.add(gridLines);
+    
+    // Create meshes for orthographic views
+    const topMeshGeometry = geometry.clone();
+    const frontMeshGeometry = geometry.clone();
+    const rightMeshGeometry = geometry.clone();
+    const leftMeshGeometry = geometry.clone();
+    
+    // Create meshes for different views with the same material
+    const topMesh = new THREE.Mesh(topMeshGeometry, material.clone());
+    const frontMesh = new THREE.Mesh(frontMeshGeometry, material.clone());
+    const rightMesh = new THREE.Mesh(rightMeshGeometry, material.clone());
+    const leftMesh = new THREE.Mesh(leftMeshGeometry, material.clone());
+    
+    // Add edge lines to orthographic views
+    const topEdges = new THREE.LineSegments(new THREE.EdgesGeometry(topMeshGeometry), edgeMaterial.clone());
+    const frontEdges = new THREE.LineSegments(new THREE.EdgesGeometry(frontMeshGeometry), edgeMaterial.clone());
+    const rightEdges = new THREE.LineSegments(new THREE.EdgesGeometry(rightMeshGeometry), edgeMaterial.clone());
+    const leftEdges = new THREE.LineSegments(new THREE.EdgesGeometry(leftMeshGeometry), edgeMaterial.clone());
+    
+    // Group the meshes with their edges for each view
+    const topGroup = new THREE.Group();
+    topGroup.add(topMesh);
+    topGroup.add(topEdges);
+    
+    const frontGroup = new THREE.Group();
+    frontGroup.add(frontMesh);
+    frontGroup.add(frontEdges);
+    
+    const rightGroup = new THREE.Group();
+    rightGroup.add(rightMesh);
+    rightGroup.add(rightEdges);
+    
+    const leftGroup = new THREE.Group();
+    leftGroup.add(leftMesh);
+    leftGroup.add(leftEdges);
+    
+    // Create wireframe for transitions
+    const wireframe = new THREE.Mesh(geometry.clone(), wireframeMaterial);
+    mainScene.add(wireframe);
+    
+    return {
+        mainMesh: mainGroup,
+        topMesh: topGroup,
+        frontMesh: frontGroup,
+        rightMesh: rightGroup,
+        leftMesh: leftGroup,
+        wireframe,
+        dimensions: { radius },
+        type: 'sphere'
+    };
 }
 
 // Unified projection functions
