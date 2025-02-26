@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>3D Shape Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Load Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>3D Shape Visualizer</h1>
+            <p>Drag to rotate and explore shapes - slide to transition between 2D and 3D</p>
+        </div>
+        
+        <div class="controls-container">
+            <div class="controls-left">
+                <div class="shape-controls-container">
+                    <div class="shape-selection">
+                        <h3>Select Shape</h3>
+                        <div class="shape-buttons">
+                            <button class="shape-btn" id="triangularPrism1-btn">
+                                <div class="shape-icon triangular-prism"></div>
+                                <div class="shape-label">Triangular Prism<br>(4,5 units)</div>
+                            </button>
+                            <button class="shape-btn" id="triangularPrism2-btn">
+                                <div class="shape-icon triangular-prism"></div>
+                                <div class="shape-label">Triangular Prism<br>(1,3 units)</div>
+                            </button>
+                            <button class="shape-btn" id="triangularPrism3-btn">
+                                <div class="shape-icon triangular-prism"></div>
+                                <div class="shape-label">Triangular Prism<br>(2,6 units)</div>
+                            </button>
+                            <button class="shape-btn" id="rectangularPrism-btn">
+                                <div class="shape-icon rectangular-prism"></div>
+                                <div class="shape-label">Rectangular Prism<br>(3x5 units)</div>
+                            </button>
+                            <button class="shape-btn" id="cube-btn">
+                                <div class="shape-icon cube"></div>
+                                <div class="shape-label">Cube<br>(3 units)</div>
+                            </button>
+                            <button class="shape-btn" id="custom-btn">
+                                <div class="shape-icon custom"></div>
+                                <div class="shape-label">Custom<br>Shape</div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Custom shape input - Always visible section -->
+                    <div id="shape-word-problem" class="shape-word-problem">
+                        <h3>Generate Custom Shape</h3>
+                        <p class="word-problem-description">Describe a 3D shape in words:</p>
+                        <div class="input-container">
+                            <textarea id="shape-description" placeholder="Example: A triangular prism that is 4 units tall with a base that has sides of 3 and 5 units" rows="3"></textarea>
+                            <button id="generate-btn" class="primary-btn">Generate Shape</button>
+                        </div>
+                        <div class="example-descriptions">
+                            <p><strong>Examples:</strong></p>
+                            <ul>
+                                <li>"Cube with sides of 4 units"</li>
+                                <li>"Rectangular prism 3 high, 4 wide, 5 long"</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slider-container">
+                    <label for="transition-slider">2D to 3D Transition:</label>
+                    <input type="range" id="transition-slider" min="0" max="100" value="100">
+                    <span id="slider-value">3D View</span>
+                </div>
+                
+                <div class="shape-details" id="shape-details">
+                    <h3>Shape Details</h3>
+                    <div class="tabs">
+                        <button class="tab-btn active" id="metrics-tab">Metrics</button>
+                        <button class="tab-btn" id="formulas-tab">Formulas</button>
+                        <button class="tab-btn" id="nets-tab">Nets</button>
+                        <button class="tab-btn" id="properties-tab">Properties</button>
+                    </div>
+                    <div class="tab-content active" id="metrics-content">
+                        <div id="shape-dimensions"></div>
+                        <div id="shape-properties"></div>
+                    </div>
+                    <div class="tab-content" id="formulas-content">
+                        <div id="shape-formulas"></div>
+                    </div>
+                    <div class="tab-content" id="nets-content">
+                        <div id="shape-nets" style="width: 100%">
+                        </div>
+                    </div>
+                    <div class="tab-content" id="properties-content">
+                        <div id="shape-topology"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls-right">
+                <div class="view-options">
+                    <div class="view-controls">
+                        <h3>View Controls</h3>
+                        <div class="view-buttons">
+                            <button id="top-view-btn">Top View</button>
+                            <button id="front-view-btn">Front View</button>
+                            <button id="side-view-btn">Side View</button>
+                            <button id="isometric-view-btn">Isometric</button>
+                            <button id="reset-view">Reset</button>
+                        </div>
+                        
+                        <div class="camera-adjustments">
+                            <div class="adjustment-control">
+                                <label for="horizontal-angle">Horizontal Angle:</label>
+                                <input type="range" id="horizontal-angle" min="-180" max="180" value="0">
+                                <span id="horizontal-angle-value">0°</span>
+                            </div>
+                            
+                            <div class="adjustment-control">
+                                <label for="vertical-angle">Vertical Angle:</label>
+                                <input type="range" id="vertical-angle" min="-89" max="89" value="0">
+                                <span id="vertical-angle-value">0°</span>
+                            </div>
+                            
+                            <div class="adjustment-control">
+                                <label for="camera-distance">Distance:</label>
+                                <input type="range" id="camera-distance" min="5" max="20" value="10">
+                                <span id="camera-distance-value">10</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Moved orthographic views here -->
+                        <div class="orthographic-views-container">
+                            <h3>2D Projections</h3>
+                            <div class="orthographic-views">
+                                <div class="view" id="top-view">
+                                    <h4>Top View</h4>
+                                    <div class="view-canvas" id="top-view-canvas"></div>
+                                </div>
+                                <div class="view" id="front-view">
+                                    <h4>Front View</h4>
+                                    <div class="view-canvas" id="front-view-canvas"></div>
+                                </div>
+                                <div class="view" id="right-view">
+                                    <h4>Right View</h4>
+                                    <div class="view-canvas" id="right-view-canvas"></div>
+                                </div>
+                                <div class="view" id="left-view">
+                                    <h4>Left View</h4>
+                                    <div class="view-canvas" id="left-view-canvas"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="cross-section-controls">
+                        <h3>Cross Section Tools</h3>
+                        <div class="cross-section-toggle">
+                            <label for="cross-section-toggle">Enable Cross Section:</label>
+                            <input type="checkbox" id="cross-section-toggle">
+                        </div>
+                        
+                        <div class="cross-section-slider hidden" id="cross-section-controls">
+                            <div class="plane-selector">
+                                <label for="cross-section-plane">Cutting Plane:</label>
+                                <div class="plane-buttons">
+                                    <button class="plane-btn" id="horizontal-plane-btn">Horizontal</button>
+                                    <button class="plane-btn" id="vertical-plane-btn">Vertical</button>
+                                    <button class="plane-btn" id="angled-plane-btn">Angled</button>
+                                </div>
+                            </div>
+                            
+                            <div class="adjustment-control">
+                                <label for="cross-section-position">Position:</label>
+                                <input type="range" id="cross-section-position" min="0" max="100" value="50">
+                                <span id="cross-section-position-value">50%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="visualization">
+            <div class="main-view" id="main-view">
+                <div id="canvas-container"></div>
+            </div>
+        </div>
+        
+        <div class="bottom-section">
+            <div class="instructions">
+                <h2>Instructions</h2>
+                <ul>
+                    <li>Use the slider to transition between 2D orthographic views and 3D representation</li>
+                    <li>Drag to rotate the 3D view</li>
+                    <li>Scroll to zoom in/out</li>
+                    <li>Check "Enable Cross Section" to visualize different cross-sections of the solid</li>
+                    <li>Select different preset shapes using the buttons or create a custom shape</li>
+                </ul>
+            </div>
+            
+            <div class="legend">
+                <h2>Orthographic Drawing Reference</h2>
+                <div class="example-images">
+                    <img src="example1.png" alt="Example 1" class="example-image" onclick="showFullScreenImage('example1.png')">
+                    <img src="example2.png" alt="Example 2" class="example-image" onclick="showFullScreenImage('example2.png')">
+                </div>
+                <div id="fullscreen-image-overlay" class="fullscreen-overlay hidden">
+                    <div class="close-overlay" onclick="hideFullScreenImage()">&times;</div>
+                    <img id="fullscreen-image" src="">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Controls -->
+    <div class="mobile-control-icons">
+        <div class="control-icon" id="shape-icon"></div>
+        <div class="control-icon" id="view-icon"></div>
+        <div class="control-icon" id="cross-section-icon"></div>
+        <div class="control-icon" id="info-icon"></div>
+    </div>
+    
+    <!-- Mobile Panels -->
+    <div class="mobile-panel" id="shape-panel">
+        <button class="close-panel">&times;</button>
+        <div class="mobile-panel-title">Select Shape</div>
+        <div class="shape-buttons">
+            <button class="shape-btn" id="mobile-triangularPrism1-btn">
+                <div class="shape-icon triangular-prism"></div>
+                <div class="shape-label">Triangle Prism 1</div>
+            </button>
+            <button class="shape-btn" id="mobile-triangularPrism2-btn">
+                <div class="shape-icon triangular-prism"></div>
+                <div class="shape-label">Triangle Prism 2</div>
+            </button>
+            <button class="shape-btn" id="mobile-triangularPrism3-btn">
+                <div class="shape-icon triangular-prism"></div>
+                <div class="shape-label">Triangle Prism 3</div>
+            </button>
+            <button class="shape-btn" id="mobile-rectangularPrism-btn">
+                <div class="shape-icon rectangular-prism"></div>
+                <div class="shape-label">Rect. Prism</div>
+            </button>
+            <button class="shape-btn" id="mobile-cube-btn">
+                <div class="shape-icon cube"></div>
+                <div class="shape-label">Cube</div>
+            </button>
+            <button class="shape-btn" id="mobile-custom-btn">
+                <div class="shape-icon custom"></div>
+                <div class="shape-label">Custom</div>
+            </button>
+        </div>
+        <div id="mobile-custom-input" class="hidden">
+            <input type="text" id="mobile-shape-description" placeholder="Describe shape (e.g., Cube with 3 units)">
+            <button id="mobile-generate-btn">Generate</button>
+        </div>
+    </div>
+    
+    <div class="mobile-panel" id="view-panel">
+        <button class="close-panel">&times;</button>
+        <div class="mobile-panel-title">View Controls</div>
+        <div class="view-buttons">
+            <button id="mobile-top-view-btn">Top</button>
+            <button id="mobile-front-view-btn">Front</button>
+            <button id="mobile-side-view-btn">Side</button>
+            <button id="mobile-isometric-view-btn">Isometric</button>
+        </div>
+        <div class="slider-container">
+            <label for="mobile-transition-slider">2D to 3D:</label>
+            <input type="range" id="mobile-transition-slider" min="0" max="100" value="100">
+        </div>
+        <div class="camera-adjustments">
+            <div class="adjustment-control">
+                <label for="mobile-horizontal-angle">Horizontal:</label>
+                <input type="range" id="mobile-horizontal-angle" min="-180" max="180" value="0">
+            </div>
+            <div class="adjustment-control">
+                <label for="mobile-vertical-angle">Vertical:</label>
+                <input type="range" id="mobile-vertical-angle" min="-89" max="89" value="0">
+            </div>
+            <div class="adjustment-control">
+                <label for="mobile-camera-distance">Distance:</label>
+                <input type="range" id="mobile-camera-distance" min="5" max="20" value="10">
+            </div>
+        </div>
+        
+        <!-- Mobile 2D projections -->
+        <div class="mobile-orthographic-views-container">
+            <div class="mobile-panel-title">2D Projections</div>
+            <div class="orthographic-views mobile">
+                <div class="view" id="mobile-top-view">
+                    <h4>Top</h4>
+                    <div class="view-canvas" id="mobile-top-view-canvas"></div>
+                </div>
+                <div class="view" id="mobile-front-view">
+                    <h4>Front</h4>
+                    <div class="view-canvas" id="mobile-front-view-canvas"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mobile-panel" id="cross-section-panel">
+        <button class="close-panel">&times;</button>
+        <div class="mobile-panel-title">Cross Section</div>
+        <div class="cross-section-toggle">
+            <label for="mobile-cross-section-toggle">Enable Cross Section:</label>
+            <input type="checkbox" id="mobile-cross-section-toggle">
+        </div>
+        <div id="mobile-cross-section-controls">
+            <div class="plane-buttons">
+                <button class="plane-btn" id="mobile-horizontal-plane-btn">Horizontal</button>
+                <button class="plane-btn" id="mobile-vertical-plane-btn">Vertical</button>
+                <button class="plane-btn" id="mobile-angled-plane-btn">Angled</button>
+            </div>
+            <div class="adjustment-control">
+                <label for="mobile-cross-section-position">Position:</label>
+                <input type="range" id="mobile-cross-section-position" min="0" max="100" value="50">
+            </div>
+        </div>
+    </div>
+    
+    <div class="mobile-panel" id="info-panel">
+        <button class="close-panel">&times;</button>
+        <div class="mobile-panel-title">Shape Information</div>
+        <div class="tabs">
+            <button class="tab-btn active" id="mobile-metrics-tab">Metrics</button>
+            <button class="tab-btn" id="mobile-formulas-tab">Formulas</button>
+            <button class="tab-btn" id="mobile-nets-tab">Nets</button>
+            <button class="tab-btn" id="mobile-properties-tab">Properties</button>
+        </div>
+        <div class="tab-content active" id="mobile-metrics-content">
+            <div id="mobile-shape-dimensions"></div>
+            <div id="mobile-shape-properties"></div>
+        </div>
+        <div class="tab-content" id="mobile-formulas-content">
+            <div id="mobile-shape-formulas"></div>
+        </div>
+        <div class="tab-content" id="mobile-nets-content">
+            <div id="mobile-shape-nets" style="width: 100%">
+            </div>
+        </div>
+        <div class="tab-content" id="mobile-properties-content">
+            <div id="mobile-shape-topology"></div>
+        </div>
+    </div>
+
+    <!-- OrbitControls script -->
+    <script>
+    // OrbitControls.js - a completely rewritten version from scratch
+    // This is a custom implementation designed specifically for this application
+    
+    THREE.OrbitControls = function(object, domElement) {
+        this.object = object;
+        this.domElement = (domElement !== undefined) ? domElement : document;
+        
+        // API
+        this.enabled = true;
+        this.target = new THREE.Vector3();
+        
+        this.enableZoom = true;
+        this.zoomSpeed = 1.0;
+        
+        this.enableRotate = true;
+        this.rotateSpeed = 1.0;
+        
+        this.enablePan = true;
+        this.panSpeed = 1.0;
+        
+        this.enableDamping = false;
+        this.dampingFactor = 0.05;
+        
+        this.minDistance = 5; // Minimum zoom distance to prevent getting too close
+        this.maxDistance = 20; // Maximum zoom distance to always keep grid fully visible
+        
+        this.minPolarAngle = 0;
+        this.maxPolarAngle = Math.PI;
+        
+        // Internal variables for tracking interaction state
+        this.isMouseDown = false; // This is now accessible externally to check drag state
+        this.isDragging = false; // Add tracking for actual dragging vs simple clicks
+        this.rotateStart = new THREE.Vector2();
+        this.rotateEnd = new THREE.Vector2();
+        this.rotateDelta = new THREE.Vector2();
+        
+        // Touch interactions
+        this._touchZoomDistanceStart = 0;
+        this._touchZoomDistanceEnd = 0;
+        
+        // Events
+        const changeEvent = { type: 'change' };
+        const startEvent = { type: 'start' };
+        const endEvent = { type: 'end' };
+        
+        // Mouse down handler
+        const onMouseDown = (event) => {
+            if (!this.enabled) return;
+            
+            event.preventDefault();
+            
+            this.isMouseDown = true;
+            this.rotateStart.set(event.clientX, event.clientY);
+            
+            // Change cursor style
+            this.domElement.style.cursor = 'grabbing';
+            
+            // Add the mousemove and mouseup listeners
+            document.addEventListener('mousemove', onMouseMove, false);
+            document.addEventListener('mouseup', onMouseUp, false);
+            
+            // Dispatch the start event
+            this.dispatchEvent(startEvent);
+        };
+        
+        // Mouse move handler
+        const onMouseMove = (event) => {
+            if (!this.enabled || !this.isMouseDown) return;
+            
+            event.preventDefault();
+            
+            // Mark as dragging once movement occurs while mouse is down
+            this.isDragging = true;
+            
+            this.rotateEnd.set(event.clientX, event.clientY);
+            this.rotateDelta.subVectors(this.rotateEnd, this.rotateStart);
+            
+            // Calculate rotation angles - negate X for more natural feel
+            // But keep Y positive for expected vertical behavior
+            // Adjust the multipliers to control mouse sensitivity
+            const deltaX = -this.rotateDelta.x * this.rotateSpeed * 0.005;
+            const deltaY = this.rotateDelta.y * this.rotateSpeed * 0.005;
+            
+            // Apply rotation
+            this.rotateLeft(deltaX);
+            this.rotateUp(deltaY);
+            
+            // Update start position for next move
+            this.rotateStart.copy(this.rotateEnd);
+            
+            // Update the camera
+            this.update();
+            
+            // Dispatch change event
+            this.dispatchEvent(changeEvent);
+        };
+        
+        // Mouse up handler
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove, false);
+            document.removeEventListener('mouseup', onMouseUp, false);
+            
+            // Reset mouse state
+            const wasDragging = this.isDragging;
+            this.isMouseDown = false;
+            this.isDragging = false;
+            this.domElement.style.cursor = 'grab';
+            
+            // Dispatch end event
+            this.dispatchEvent(endEvent);
+        };
+        
+        // Mouse wheel handler for zoom with double-click and min/max limit handling
+        const onMouseWheel = (event) => {
+            if (!this.enabled || !this.enableZoom) return;
+            
+            event.preventDefault();
+            
+            let delta = 0;
+            
+            if (event.deltaY !== undefined) {
+                delta = event.deltaY;
+            } else if (event.wheelDelta !== undefined) {
+                delta = -event.wheelDelta;
+            } else if (event.detail !== undefined) {
+                delta = event.detail * 10;
+            }
+            
+            // Scale factor - smaller makes zooming smoother
+            const zoomFactor = delta > 0 ? 1.1 : 0.9;
+            
+            // Apply zoom with better boundary checking
+            const currentDistance = this.object.position.length();
+            
+            // Check if we're at the boundaries - don't zoom out farther than maxDistance
+            // Allow zooming in closer if the distance is already within bounds
+            if ((zoomFactor > 1 && currentDistance < this.maxDistance) || 
+                (zoomFactor < 1 && currentDistance > this.minDistance)) {
+                
+                // Calculate new potential distance
+                const newDistance = currentDistance * zoomFactor;
+                
+                // Don't allow zooming out past the max or in past the min
+                if (newDistance <= this.maxDistance && newDistance >= this.minDistance) {
+                    this.object.position.multiplyScalar(zoomFactor);
+                }
+            }
+            
+            this.update();
+            this.dispatchEvent(changeEvent);
+        };
+        
+        // Double-click to zoom in
+        const onDoubleClick = (event) => {
+            if (!this.enabled || !this.enableZoom) return;
+            
+            event.preventDefault();
+            
+            // Zoom in factor
+            const zoomFactor = 0.7; // 30% closer
+            
+            // Get current distance
+            const currentDistance = this.object.position.length();
+            
+            // Calculate new distance after zoom
+            const newDistance = currentDistance * zoomFactor;
+            
+            // Only zoom in if we're not already too close
+            if (newDistance >= this.minDistance) {
+                this.object.position.multiplyScalar(zoomFactor);
+                this.update();
+                this.dispatchEvent(changeEvent);
+            }
+        };
+        
+        // Add event listeners to DOM element
+        this.domElement.addEventListener('mousedown', onMouseDown, false);
+        this.domElement.addEventListener('wheel', onMouseWheel, false);
+        this.domElement.addEventListener('dblclick', onDoubleClick, false);
+        
+        // Add touch events for mobile/touch screens
+        this.domElement.addEventListener('touchstart', (event) => {
+            if (!this.enabled) return;
+            
+            // Prevent default to avoid scrolling
+            event.preventDefault();
+            
+            if (event.touches.length === 1) {
+                this.isMouseDown = true;
+                this.rotateStart.set(event.touches[0].clientX, event.touches[0].clientY);
+                
+                // Dispatch the start event
+                this.dispatchEvent(startEvent);
+            }
+        }, { passive: false });
+        
+        this.domElement.addEventListener('touchmove', (event) => {
+            if (!this.enabled || !this.isMouseDown) return;
+            
+            event.preventDefault();
+            
+            this.isDragging = true;
+            
+            this.rotateEnd.set(event.touches[0].clientX, event.touches[0].clientY);
+            this.rotateDelta.subVectors(this.rotateEnd, this.rotateStart);
+            
+            // Calculate rotation angles - same as mouse movement
+            const deltaX = -this.rotateDelta.x * this.rotateSpeed * 0.005;
+            const deltaY = this.rotateDelta.y * this.rotateSpeed * 0.005;
+            
+            // Apply rotation
+            this.rotateLeft(deltaX);
+            this.rotateUp(deltaY);
+            
+            // Update start position for next move
+            this.rotateStart.copy(this.rotateEnd);
+            
+            // Update the camera
+            this.update();
+            
+            // Dispatch change event
+            this.dispatchEvent(changeEvent);
+        }, { passive: false });
+        
+        this.domElement.addEventListener('touchend', (event) => {
+            // Reset state
+            const wasDragging = this.isDragging;
+            this.isMouseDown = false;
+            this.isDragging = false;
+            
+            // Dispatch end event
+            this.dispatchEvent(endEvent);
+        }, { passive: false });
+        
+        // Handle pinch to zoom
+        this.domElement.addEventListener('touchstart', (event) => {
+            if (!this.enabled || !this.enableZoom) return;
+            
+            // Store initial finger distance for zoom
+            if (event.touches.length === 2) {
+                const dx = event.touches[0].clientX - event.touches[1].clientX;
+                const dy = event.touches[0].clientY - event.touches[1].clientY;
+                this._touchZoomDistanceStart = Math.sqrt(dx * dx + dy * dy);
+            }
+        }, { passive: false });
+        
+        this.domElement.addEventListener('touchmove', (event) => {
+            if (!this.enabled || !this.enableZoom) return;
+            
+            // Handle pinch zoom
+            if (event.touches.length === 2) {
+                event.preventDefault();
+                
+                const dx = event.touches[0].clientX - event.touches[1].clientX;
+                const dy = event.touches[0].clientY - event.touches[1].clientY;
+                this._touchZoomDistanceEnd = Math.sqrt(dx * dx + dy * dy);
+                
+                // Calculate zoom factor based on pinch difference
+                const factor = this._touchZoomDistanceStart / this._touchZoomDistanceEnd;
+                
+                // Only apply zoom if the change is significant
+                if (Math.abs(1 - factor) > 0.05) {
+                    const currentDistance = this.object.position.length();
+                    const newDistance = currentDistance * factor;
+                    
+                    // Check zoom boundaries
+                    if (newDistance <= this.maxDistance && newDistance >= this.minDistance) {
+                        this.object.position.multiplyScalar(factor);
+                    }
+                    
+                    this._touchZoomDistanceStart = this._touchZoomDistanceEnd;
+                    this.update();
+                    this.dispatchEvent(changeEvent);
+                }
+            }
+        }, { passive: false });
+        
+        // Set initial cursor style
+        this.domElement.style.cursor = 'grab';
+        
+        // Rotation methods - simplified more intuitive version
+        this.rotateLeft = function(angle) {
+            // For a more natural feel, we rotate around the world Y axis
+            // Think of this as the user spinning the object on a table
+            
+            // Get the current radius (distance from camera to target)
+            const radius = this.object.position.distanceTo(this.target);
+            
+            // Calculate current horizontal angle (in the XZ plane)
+            let currentHorizontalAngle = Math.atan2(
+                this.object.position.x - this.target.x,
+                this.object.position.z - this.target.z
+            );
+            
+            // Add our drag angle to get the new angle
+            currentHorizontalAngle += angle;
+            
+            // Calculate the vertical angle from the XZ plane
+            const height = this.object.position.y - this.target.y;
+            const verticalAngle = Math.asin(height / radius);
+            
+            // Calculate new camera position using spherical coordinates
+            const newX = this.target.x + radius * Math.cos(verticalAngle) * Math.sin(currentHorizontalAngle);
+            const newY = this.target.y + radius * Math.sin(verticalAngle);
+            const newZ = this.target.z + radius * Math.cos(verticalAngle) * Math.cos(currentHorizontalAngle);
+            
+            // Update camera position
+            this.object.position.set(newX, newY, newZ);
+        };
+        
+        this.rotateUp = function(angle) {
+            // For vertical rotation, think of the camera moving up and down on a circle
+            
+            // Get the current radius (distance from camera to target)
+            const radius = this.object.position.distanceTo(this.target);
+            
+            // Get horizontal angle (in the XZ plane)
+            const horizontalAngle = Math.atan2(
+                this.object.position.x - this.target.x,
+                this.object.position.z - this.target.z
+            );
+            
+            // Calculate current vertical angle from the XZ plane
+            let height = this.object.position.y - this.target.y;
+            let verticalAngle = Math.asin(height / radius);
+            
+            // Add our drag angle to get the new vertical angle
+            verticalAngle += angle;
+            
+            // Clamp the vertical angle to avoid flipping
+            const maxAngle = Math.PI * 0.48; // Just under 90 degrees
+            verticalAngle = Math.max(-maxAngle, Math.min(maxAngle, verticalAngle));
+            
+            // Calculate new camera position using spherical coordinates
+            const newX = this.target.x + radius * Math.cos(verticalAngle) * Math.sin(horizontalAngle);
+            const newY = this.target.y + radius * Math.sin(verticalAngle);
+            const newZ = this.target.z + radius * Math.cos(verticalAngle) * Math.cos(horizontalAngle);
+            
+            // Update camera position
+            this.object.position.set(newX, newY, newZ);
+        };
+        
+        this.update = function() {
+            this.object.lookAt(this.target);
+        };
+        
+        this.reset = function() {
+            this.target.set(0, 0, 0);
+            this.object.position.set(10, 10, 10);
+            this.object.up.set(0, 1, 0);
+            this.object.lookAt(this.target);
+        };
+        
+        // Event handling system
+        this._listeners = {};
+        
+        this.addEventListener = function(type, listener) {
+            if (this._listeners === undefined) this._listeners = {};
+            
+            const listeners = this._listeners;
+            
+            if (listeners[type] === undefined) {
+                listeners[type] = [];
+            }
+            
+            if (listeners[type].indexOf(listener) === -1) {
+                listeners[type].push(listener);
+            }
+        };
+        
+        this.hasEventListener = function(type, listener) {
+            if (this._listeners === undefined) return false;
+            
+            const listeners = this._listeners;
+            return listeners[type] !== undefined && listeners[type].indexOf(listener) !== -1;
+        };
+        
+        this.removeEventListener = function(type, listener) {
+            if (this._listeners === undefined) return;
+            
+            const listeners = this._listeners;
+            const listenerArray = listeners[type];
+            
+            if (listenerArray !== undefined) {
+                const index = listenerArray.indexOf(listener);
+                
+                if (index !== -1) {
+                    listenerArray.splice(index, 1);
+                }
+            }
+        };
+        
+        this.dispatchEvent = function(event) {
+            if (this._listeners === undefined) return;
+            
+            const listeners = this._listeners;
+            const listenerArray = listeners[event.type];
+            
+            if (listenerArray !== undefined) {
+                event.target = this;
+                
+                const array = listenerArray.slice(0);
+                
+                for (let i = 0, l = array.length; i < l; i++) {
+                    array[i].call(this, event);
+                }
+            }
+        };
+    };
+    </script>
+
+    <!-- Main application script -->
+    <script src="script.js"></script>
+</body>
+</html>
