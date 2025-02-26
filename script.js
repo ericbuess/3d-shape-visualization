@@ -156,18 +156,41 @@ function setupMobileControls() {
     const allPanels = [shapePanel, viewPanel, crossSectionPanel, infoPanel];
     const allIcons = [shapeIcon, viewIcon, crossSectionIcon, infoIcon];
     
+    // Close panels function
+    const closePanels = () => {
+        allPanels.forEach(panel => panel.classList.remove('active'));
+        allIcons.forEach(icon => icon.classList.remove('active'));
+    };
+    
     // Close buttons
     const closeButtons = document.querySelectorAll('.close-panel');
     closeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            allPanels.forEach(panel => panel.classList.remove('active'));
-            allIcons.forEach(icon => icon.classList.remove('active'));
+        btn.addEventListener('click', closePanels);
+    });
+    
+    // Close panels when clicking outside
+    document.addEventListener('click', (event) => {
+        // If click is outside any panel and not on an icon
+        if (!event.target.closest('.mobile-panel') && 
+            !event.target.closest('.control-icon') &&
+            !event.target.closest('.close-panel')) {
+            closePanels();
+        }
+    });
+    
+    // Prevent clicks inside panels from closing the panel
+    allPanels.forEach(panel => {
+        panel.addEventListener('click', (event) => {
+            event.stopPropagation();
         });
     });
     
     // Toggle panels on icon click
     function setupIconPanel(icon, panel, onOpen) {
-        icon.addEventListener('click', () => {
+        icon.addEventListener('click', (event) => {
+            // Stop propagation to prevent the document click handler from running
+            event.stopPropagation();
+            
             const isActive = panel.classList.contains('active');
             
             // Close all panels
