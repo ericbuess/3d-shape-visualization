@@ -766,10 +766,10 @@ function initOrthographicViews() {
     // Create camera with square aspect ratio
     const topViewSize = 7; // Adjusted size for better view
     topCamera = new THREE.OrthographicCamera(
-        -topViewSize * Math.max(topAspect, 1),
-        topViewSize * Math.max(topAspect, 1),
-        topViewSize / Math.min(topAspect, 1),
-        -topViewSize / Math.min(topAspect, 1),
+        -topViewSize,
+        topViewSize,
+        topViewSize,
+        -topViewSize,
         0.1, 1000
     );
     topCamera.position.set(0, 10, 0);
@@ -810,10 +810,10 @@ function initOrthographicViews() {
     // Create camera with square aspect ratio
     const frontViewSize = 7;
     frontCamera = new THREE.OrthographicCamera(
-        -frontViewSize * Math.max(frontAspect, 1),
-        frontViewSize * Math.max(frontAspect, 1),
-        frontViewSize / Math.min(frontAspect, 1),
-        -frontViewSize / Math.min(frontAspect, 1),
+        -frontViewSize,
+        frontViewSize,
+        frontViewSize,
+        -frontViewSize,
         0.1, 1000
     );
     frontCamera.position.set(0, 0, 10);
@@ -854,10 +854,10 @@ function initOrthographicViews() {
     // Create camera with square aspect ratio
     const rightViewSize = 7;
     rightCamera = new THREE.OrthographicCamera(
-        -rightViewSize * Math.max(rightAspect, 1),
-        rightViewSize * Math.max(rightAspect, 1),
-        rightViewSize / Math.min(rightAspect, 1),
-        -rightViewSize / Math.min(rightAspect, 1),
+        -rightViewSize,
+        rightViewSize,
+        rightViewSize,
+        -rightViewSize,
         0.1, 1000
     );
     rightCamera.position.set(10, 0, 0);
@@ -898,10 +898,10 @@ function initOrthographicViews() {
     // Create camera with square aspect ratio
     const leftViewSize = 7;
     leftCamera = new THREE.OrthographicCamera(
-        -leftViewSize * Math.max(leftAspect, 1),
-        leftViewSize * Math.max(leftAspect, 1),
-        leftViewSize / Math.min(leftAspect, 1),
-        -leftViewSize / Math.min(leftAspect, 1),
+        -leftViewSize,
+        leftViewSize,
+        leftViewSize,
+        -leftViewSize,
         0.1, 1000
     );
     leftCamera.position.set(-10, 0, 0);
@@ -1028,10 +1028,10 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         // Create camera with square aspect ratio
         const mobileTopViewSize = 7;
         window.mobileTopCamera = new THREE.OrthographicCamera(
-            -mobileTopViewSize * Math.max(mobileTopAspect, 1),
-            mobileTopViewSize * Math.max(mobileTopAspect, 1),
-            mobileTopViewSize / Math.min(mobileTopAspect, 1),
-            -mobileTopViewSize / Math.min(mobileTopAspect, 1),
+            -mobileTopViewSize,
+            mobileTopViewSize,
+            mobileTopViewSize,
+            -mobileTopViewSize,
             0.1, 1000
         );
         window.mobileTopCamera.position.set(0, 10, 0);
@@ -1069,10 +1069,10 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         // Create camera with square aspect ratio
         const mobileFrontViewSize = 7;
         window.mobileFrontCamera = new THREE.OrthographicCamera(
-            -mobileFrontViewSize * Math.max(mobileFrontAspect, 1),
-            mobileFrontViewSize * Math.max(mobileFrontAspect, 1),
-            mobileFrontViewSize / Math.min(mobileFrontAspect, 1),
-            -mobileFrontViewSize / Math.min(mobileFrontAspect, 1),
+            -mobileFrontViewSize,
+            mobileFrontViewSize,
+            mobileFrontViewSize,
+            -mobileFrontViewSize,
             0.1, 1000
         );
         window.mobileFrontCamera.position.set(0, 0, 10);
@@ -1110,10 +1110,10 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         // Create camera with square aspect ratio
         const mobileRightViewSize = 7;
         window.mobileRightCamera = new THREE.OrthographicCamera(
-            -mobileRightViewSize * Math.max(mobileRightAspect, 1),
-            mobileRightViewSize * Math.max(mobileRightAspect, 1),
-            mobileRightViewSize / Math.min(mobileRightAspect, 1),
-            -mobileRightViewSize / Math.min(mobileRightAspect, 1),
+            -mobileRightViewSize,
+            mobileRightViewSize,
+            mobileRightViewSize,
+            -mobileRightViewSize,
             0.1, 1000
         );
         window.mobileRightCamera.position.set(10, 0, 0);
@@ -1151,10 +1151,10 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         // Create camera with square aspect ratio
         const mobileLeftViewSize = 7;
         window.mobileLeftCamera = new THREE.OrthographicCamera(
-            -mobileLeftViewSize * Math.max(mobileLeftAspect, 1),
-            mobileLeftViewSize * Math.max(mobileLeftAspect, 1),
-            mobileLeftViewSize / Math.min(mobileLeftAspect, 1),
-            -mobileLeftViewSize / Math.min(mobileLeftAspect, 1),
+            -mobileLeftViewSize,
+            mobileLeftViewSize,
+            mobileLeftViewSize,
+            -mobileLeftViewSize,
             0.1, 1000
         );
         window.mobileLeftCamera.position.set(-10, 0, 0);
@@ -1200,13 +1200,11 @@ function resizeMobileViewRenderers() {
     function updateMobileOrthographicCamera(camera, container, viewSize = 7) {
         if (!camera || !container) return;
         
-        const aspect = container.clientWidth / container.clientHeight;
-        
-        // Update camera frustum to maintain square grid cells
-        camera.left = -viewSize * Math.max(aspect, 1);
-        camera.right = viewSize * Math.max(aspect, 1);
-        camera.top = viewSize / Math.min(aspect, 1);
-        camera.bottom = -viewSize / Math.min(aspect, 1);
+        // Keep camera frustum as a perfect square regardless of container dimensions
+        camera.left = -viewSize;
+        camera.right = viewSize;
+        camera.top = viewSize;
+        camera.bottom = -viewSize;
         
         camera.updateProjectionMatrix();
     }
@@ -4910,13 +4908,11 @@ function onWindowResize() {
     function updateOrthographicCamera(camera, container, viewSize = 7) {
         if (!camera || !container) return;
         
-        const aspect = container.clientWidth / container.clientHeight;
-        
-        // Update camera frustum to maintain square grid cells
-        camera.left = -viewSize * Math.max(aspect, 1);
-        camera.right = viewSize * Math.max(aspect, 1);
-        camera.top = viewSize / Math.min(aspect, 1);
-        camera.bottom = -viewSize / Math.min(aspect, 1);
+        // Keep camera frustum as a perfect square regardless of container dimensions
+        camera.left = -viewSize;
+        camera.right = viewSize;
+        camera.top = viewSize;
+        camera.bottom = -viewSize;
         
         camera.updateProjectionMatrix();
     }
