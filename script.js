@@ -20,6 +20,9 @@ function updateMeshOpacity(mesh, value) {
     if (!mesh) return;
     
     mesh.traverse(child => {
+        // Skip any cross-section meshes to prevent them from being affected by opacity changes
+        if (child.isCrossSectionMesh) return;
+        
         if (child.isMesh && child.material) {
             // Store original material colors if not already stored
             if (!child.originalMaterial) {
@@ -4784,25 +4787,56 @@ function updateShapeTransition() {
         // Always keep visible but change opacity
         currentShape.mainMesh.visible = true;
         
-        // Directly apply opacity to all child meshes to ensure it works
-        currentShape.mainMesh.traverse(child => {
-            if (child.isMesh) {
-                // Make sure material is set to be transparent
-                if (child.material) {
-                    if (Array.isArray(child.material)) {
-                        child.material.forEach(mat => {
-                            mat.transparent = true;
-                            mat.opacity = Math.max(0.2, transitionValue * 0.9);
-                            mat.needsUpdate = true;
-                        });
-                    } else {
-                        child.material.transparent = true;
-                        child.material.opacity = Math.max(0.2, transitionValue * 0.9);
-                        child.material.needsUpdate = true;
+        // Handle shapes with cross-sections differently to prevent color issues
+        if (crossSectionEnabled) {
+            // When cross-section is active, more carefully update the materials to avoid color conflicts
+            currentShape.mainMesh.traverse(child => {
+                // Skip objects marked as cross-section meshes
+                if (child.isCrossSectionMesh) return;
+                
+                if (child.isMesh) {
+                    // Store original material properties if not already stored
+                    if (!child.originalMaterial) {
+                        if (Array.isArray(child.material)) {
+                            child.originalMaterial = child.material.map(mat => {
+                                const clonedMat = mat.clone();
+                                if (mat.color) clonedMat._originalColor = mat.color.clone();
+                                return clonedMat;
+                            });
+                        } else {
+                            child.originalMaterial = child.material.clone();
+                            if (child.material.color) child.originalMaterial._originalColor = child.material.color.clone();
+                        }
+                    }
+                    
+                    // Update materials with strict color preservation
+                    if (child.material) {
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach((mat, index) => {
+                                // Always restore the exact original color
+                                if (child.originalMaterial?.[index]?._originalColor) {
+                                    mat.color.copy(child.originalMaterial[index]._originalColor);
+                                }
+                                mat.transparent = true;
+                                mat.opacity = Math.max(0.2, transitionValue * 0.9);
+                                mat.needsUpdate = true;
+                            });
+                        } else {
+                            // Always restore the exact original color
+                            if (child.originalMaterial?._originalColor) {
+                                child.material.color.copy(child.originalMaterial._originalColor);
+                            }
+                            child.material.transparent = true;
+                            child.material.opacity = Math.max(0.2, transitionValue * 0.9);
+                            child.material.needsUpdate = true;
+                        }
                     }
                 }
-            }
-        });
+            });
+        } else {
+            // Use standard opacity updating when no cross-section
+            updateMeshOpacity(currentShape.mainMesh, transitionValue);
+        }
     }
     
     // Update wireframe visibility - make it more visible at lower transition values
@@ -4826,7 +4860,7 @@ function updateShapeTransition() {
     if (currentShape.rightMesh) updateMeshOpacity(currentShape.rightMesh, transitionValue);
     if (currentShape.leftMesh) updateMeshOpacity(currentShape.leftMesh, transitionValue);
     
-    // Update cross section if enabled
+    // Update cross section if enabled - must be called AFTER updating the main mesh opacity
     if (crossSectionEnabled) {
         updateCrossSection();
     }
@@ -4847,7 +4881,7 @@ function updateCrossSection() {
     
     removeCrossSection();
     
-    let plane, planeHelper;
+    let plane;
     
     // Create the appropriate plane based on selected plane type
     switch (crossSectionPlane) {
@@ -4889,45 +4923,10 @@ function updateCrossSection() {
     
     plane.constant = planeConstant;
     
-    // Create plane helper
-    planeHelper = new THREE.PlaneHelper(plane, 10, 0xff0000);
+    // Create plane helper - just the cross-section plane, not a solid section
+    const planeHelper = new THREE.PlaneHelper(plane, 10, 0xff0000);
+    planeHelper.userData.isCrossSectionHelper = true; // Flag so it's not affected by other functions
     mainScene.add(planeHelper);
-    
-    // Create cross-section visualization
-    if (transitionValue > 0) {
-        const clippingPlanes = [plane];
-        
-        // We need to access the first mesh in the mainMesh group
-        let sourceMesh;
-        if (currentShape.mainMesh.children && currentShape.mainMesh.children.length > 0) {
-            // Find the first actual mesh in the group
-            for (const child of currentShape.mainMesh.children) {
-                if (child.isMesh && child.geometry) {
-                    sourceMesh = child;
-                    break;
-                }
-            }
-        }
-        
-        // Only proceed if we found a valid mesh
-        if (sourceMesh && sourceMesh.geometry) {
-            const clippedGeometry = sourceMesh.geometry.clone();
-            
-            const clippedMaterial = new THREE.MeshStandardMaterial({
-                color: 0xff5555,
-                side: THREE.DoubleSide,
-                clippingPlanes: clippingPlanes
-            });
-            
-            crossSectionMesh = new THREE.Mesh(clippedGeometry, clippedMaterial);
-            
-            // Copy rotation and position from the source mesh
-            crossSectionMesh.rotation.copy(sourceMesh.rotation);
-            crossSectionMesh.position.copy(sourceMesh.position);
-            
-            mainScene.add(crossSectionMesh);
-        }
-    }
 }
 
 // Remove cross section visualization
