@@ -393,11 +393,11 @@ function setupMobileControls() {
         // Update text
         const sliderValue = document.getElementById('slider-value');
         if (transitionValue < 0.1) {
-            sliderValue.textContent = '2D View';
+            sliderValue.textContent = 'Wireframe';
         } else if (transitionValue > 0.9) {
-            sliderValue.textContent = '3D View';
+            sliderValue.textContent = 'Solid';
         } else {
-            sliderValue.textContent = 'Transition';
+            sliderValue.textContent = 'Mixed';
         }
         
         // Update the shape immediately
@@ -3356,11 +3356,11 @@ function setupEventListeners() {
         transitionValue = transitionSlider.value / 100;
         
         if (transitionValue < 0.1) {
-            sliderValue.textContent = '2D View';
+            sliderValue.textContent = 'Wireframe';
         } else if (transitionValue > 0.9) {
-            sliderValue.textContent = '3D View';
+            sliderValue.textContent = 'Solid';
         } else {
-            sliderValue.textContent = 'Transition';
+            sliderValue.textContent = 'Mixed';
         }
         
         // Update the shape immediately
@@ -5219,6 +5219,7 @@ function showFullScreenImage(imageSrc) {
     
     image.src = imageSrc;
     overlay.classList.remove('hidden');
+    overlay.style.display = 'flex';
     
     // Prevent scrolling while overlay is open
     document.body.style.overflow = 'hidden';
@@ -5227,6 +5228,7 @@ function showFullScreenImage(imageSrc) {
 function hideFullScreenImage() {
     const overlay = document.getElementById('fullscreen-image-overlay');
     overlay.classList.add('hidden');
+    overlay.style.display = 'none';
     document.body.style.overflow = '';
 }
 

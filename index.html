@@ -97,7 +97,7 @@
                 </div>
                 
                 <div class="slider-container">
-                    <label for="transition-slider">2D to 3D Transition:</label>
+                    <label for="transition-slider">Shape Opacity:</label>
                     <input type="range" id="transition-slider" min="0" max="100" value="100">
                     <span id="slider-value">3D View</span>
                 </div>
@@ -235,7 +235,7 @@
                     <img src="example1.png" alt="Example 1" class="example-image" onclick="window.showFullScreenImage('example1.png')">
                     <img src="example2.png" alt="Example 2" class="example-image" onclick="window.showFullScreenImage('example2.png')">
                 </div>
-                <div id="fullscreen-image-overlay" class="fullscreen-overlay hidden" style="display: none !important;">
+                <div id="fullscreen-image-overlay" class="fullscreen-overlay hidden">
                     <div class="close-overlay" onclick="window.hideFullScreenImage()">&times;</div>
                     <img id="fullscreen-image" src="" alt="Fullscreen example image">
                 </div>
@@ -301,7 +301,7 @@
             <button id="mobile-isometric-view-btn">Isometric</button>
         </div>
         <div class="slider-container">
-            <label for="mobile-transition-slider">2D to 3D:</label>
+            <label for="mobile-transition-slider">Opacity:</label>
             <input type="range" id="mobile-transition-slider" min="0" max="100" value="100">
         </div>
         <div class="camera-adjustments">
@@ -820,24 +820,13 @@
             document.body.style.overflow = ''; // Re-enable scrolling
         };
         
-        // Ensure overlay is hidden on page load
+        // Ensure overlay is hidden on page load but don't interfere with later click events
         document.addEventListener('DOMContentLoaded', function() {
             const overlay = document.getElementById('fullscreen-image-overlay');
             if (overlay) {
                 overlay.classList.add('hidden');
-                overlay.style.display = 'none';
-                console.log('Ensuring fullscreen overlay is hidden on page load');
             }
         });
-        
-        // Also hide immediately
-        (function() {
-            const overlay = document.getElementById('fullscreen-image-overlay');
-            if (overlay) {
-                overlay.classList.add('hidden');
-                overlay.style.display = 'none';
-            }
-        })();
     </script>
     
     <!-- Main application script -->
