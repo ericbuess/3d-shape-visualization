@@ -152,8 +152,25 @@ export class CrossSectionManager {
             
             const clippedGeometry = sourceMesh.geometry.clone();
             
+            // Use original material color if available
+            let materialColor = CONFIG.CROSS_SECTION.sectionColor;
+            
+            // If the shape has original materials stored, try to use that color
+            if (shape.originalMaterials && shape.originalMaterials.has(sourceMesh)) {
+                const originalMat = shape.originalMaterials.get(sourceMesh);
+                if (originalMat) {
+                    if (Array.isArray(originalMat)) {
+                        if (originalMat[0]) {
+                            materialColor = originalMat[0].color.clone();
+                        }
+                    } else {
+                        materialColor = originalMat.color.clone();
+                    }
+                }
+            }
+            
             const clippedMaterial = new THREE.MeshStandardMaterial({
-                color: CONFIG.CROSS_SECTION.sectionColor,
+                color: materialColor,
                 side: THREE.DoubleSide,
                 clippingPlanes: clippingPlanes
             });

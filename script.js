@@ -11,6 +11,48 @@ let crossSectionPlane = 'horizontal';
 let crossSectionPosition = 0.5;
 let crossSectionMesh = null;
 
+/**
+ * Helper function to update mesh opacity while preserving original colors
+ * @param {THREE.Object3D} mesh - The mesh to update
+ * @param {number} value - The opacity value (0-1)
+ */
+function updateMeshOpacity(mesh, value) {
+    if (!mesh) return;
+    
+    mesh.traverse(child => {
+        if (child.isMesh && child.material) {
+            // Store original material colors if not already stored
+            if (!child.originalMaterial) {
+                if (Array.isArray(child.material)) {
+                    child.originalMaterial = child.material.map(mat => mat.clone());
+                } else {
+                    child.originalMaterial = child.material.clone();
+                }
+            }
+            
+            if (Array.isArray(child.material)) {
+                child.material.forEach((mat, index) => {
+                    // Keep original color
+                    if (child.originalMaterial && child.originalMaterial[index]) {
+                        mat.color.copy(child.originalMaterial[index].color);
+                    }
+                    mat.transparent = true;
+                    mat.opacity = Math.max(0.2, value * 0.9);
+                    mat.needsUpdate = true;
+                });
+            } else {
+                // Keep original color
+                if (child.originalMaterial) {
+                    child.material.color.copy(child.originalMaterial.color);
+                }
+                child.material.transparent = true;
+                child.material.opacity = Math.max(0.2, value * 0.9);
+                child.material.needsUpdate = true;
+            }
+        }
+    });
+}
+
 // Debugging
 console.log("Script loading...");
 
@@ -4778,12 +4820,11 @@ function updateShapeTransition() {
     if (currentShape.rightMesh) currentShape.rightMesh.visible = true;
     if (currentShape.leftMesh) currentShape.leftMesh.visible = true;
     
-    // Scale and adjust orthographic views based on transition value
-    const scale = Math.max(0.7, 1 - transitionValue * 0.3);
-    if (currentShape.topMesh) currentShape.topMesh.scale.set(scale, scale, scale);
-    if (currentShape.frontMesh) currentShape.frontMesh.scale.set(scale, scale, scale);
-    if (currentShape.rightMesh) currentShape.rightMesh.scale.set(scale, scale, scale);
-    if (currentShape.leftMesh) currentShape.leftMesh.scale.set(scale, scale, scale);
+    // Update opacity of orthographic views based on transition value without scaling
+    if (currentShape.topMesh) updateMeshOpacity(currentShape.topMesh, transitionValue);
+    if (currentShape.frontMesh) updateMeshOpacity(currentShape.frontMesh, transitionValue);
+    if (currentShape.rightMesh) updateMeshOpacity(currentShape.rightMesh, transitionValue);
+    if (currentShape.leftMesh) updateMeshOpacity(currentShape.leftMesh, transitionValue);
     
     // Update cross section if enabled
     if (crossSectionEnabled) {

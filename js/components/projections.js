@@ -778,17 +778,44 @@ export class ProjectionManager {
             // Always keep visible but change opacity
             shape.mainMesh.visible = true;
             
-            // Apply opacity to all child meshes
+            // Store the original materials if not already stored
+            if (!shape.originalMaterials) {
+                shape.originalMaterials = new Map();
+                shape.mainMesh.traverse(child => {
+                    if (child.isMesh && child.material) {
+                        if (Array.isArray(child.material)) {
+                            const materials = child.material.map(mat => mat.clone());
+                            shape.originalMaterials.set(child, materials);
+                        } else {
+                            shape.originalMaterials.set(child, child.material.clone());
+                        }
+                    }
+                });
+            }
+            
+            // Apply opacity to all child meshes while preserving original materials
             shape.mainMesh.traverse(child => {
                 if (child.isMesh) {
                     if (child.material) {
                         if (Array.isArray(child.material)) {
-                            child.material.forEach(mat => {
+                            child.material.forEach((mat, index) => {
+                                // Get original material properties
+                                const originalMat = shape.originalMaterials.get(child)?.[index];
+                                // Keep original color and properties
+                                if (originalMat) {
+                                    mat.color.copy(originalMat.color);
+                                }
                                 mat.transparent = true;
                                 mat.opacity = Math.max(0.2, transitionValue * 0.9);
                                 mat.needsUpdate = true;
                             });
                         } else {
+                            // Get original material properties
+                            const originalMat = shape.originalMaterials.get(child);
+                            // Keep original color and properties
+                            if (originalMat) {
+                                child.material.color.copy(originalMat.color);
+                            }
                             child.material.transparent = true;
                             child.material.opacity = Math.max(0.2, transitionValue * 0.9);
                             child.material.needsUpdate = true;
@@ -806,14 +833,6 @@ export class ProjectionManager {
                 shape.wireframe.material.needsUpdate = true;
             }
         }
-        
-        // Scale and adjust orthographic views
-        const scale = Math.max(0.7, 1 - transitionValue * 0.3);
-        
-        if (shape.topMesh) shape.topMesh.scale.set(scale, scale, scale);
-        if (shape.frontMesh) shape.frontMesh.scale.set(scale, scale, scale);
-        if (shape.rightMesh) shape.rightMesh.scale.set(scale, scale, scale);
-        if (shape.leftMesh) shape.leftMesh.scale.set(scale, scale, scale);
         
         // Force renders
         this.render();
