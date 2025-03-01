@@ -6,6 +6,12 @@ const wireframeMaterial = new THREE.MeshBasicMaterial({
 
 // Create a sphere
 export function createSphere(radius, widthSegments = 32, heightSegments = 16) {
+    // Increase segment count for larger spheres to maintain quality
+    if (radius > 10) {
+        widthSegments = Math.max(widthSegments, Math.floor(32 * Math.sqrt(radius / 10)));
+        heightSegments = Math.max(heightSegments, Math.floor(16 * Math.sqrt(radius / 10)));
+        console.log(`Using increased segments for large sphere: width=${widthSegments}, height=${heightSegments}`);
+    }
     // Create the geometry
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
     
@@ -29,8 +35,17 @@ export function createSphere(radius, widthSegments = 32, heightSegments = 16) {
     // Create grid lines for latitude and longitude
     const linePositions = [];
     
-    // Latitude lines (horizontal circles)
-    const latitudeSteps = 8;
+    // Calculate latitude and longitude line counts based on radius
+    // This ensures consistent density of gridlines as the sphere size changes
+    // For smaller spheres we want fewer lines, for larger ones we want more
+    // Base values provide good detail for a radius of 2-3 units
+    const baseRadius = 2; // Baseline radius for calibration
+    
+    // Scale number of latitude lines with radius, with a minimum of 6 lines
+    const latitudeSteps = Math.max(6, Math.round(8 * (radius / baseRadius)));
+    console.log(`Sphere radius: ${radius}, latitude steps: ${latitudeSteps}`);
+    
+    // Draw latitude lines (horizontal circles)
     for (let i = 1; i < latitudeSteps; i++) {
         const phi = (i / latitudeSteps) * Math.PI;
         const radiusAtPhi = radius * Math.sin(phi);
@@ -49,8 +64,11 @@ export function createSphere(radius, widthSegments = 32, heightSegments = 16) {
         }
     }
     
-    // Longitude lines (vertical half-circles)
-    const longitudeSteps = 12;
+    // Scale number of longitude lines with radius, with a minimum of 8 lines
+    const longitudeSteps = Math.max(8, Math.round(12 * (radius / baseRadius)));
+    console.log(`Sphere radius: ${radius}, longitude steps: ${longitudeSteps}`);
+    
+    // Draw longitude lines (vertical half-circles)
     for (let i = 0; i < longitudeSteps; i++) {
         const theta = (i / longitudeSteps) * Math.PI * 2;
         

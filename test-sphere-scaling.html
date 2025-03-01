@@ -1,0 +1,124 @@
+<\!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sphere Scaling Test</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    .controls {
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 8px 16px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    #sphere-info {
+      margin-bottom: 20px;
+      font-family: monospace;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 70vh;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sphere Scaling Test</h1>
+  <div class="controls">
+    <button id="radius-5">Radius: 5</button>
+    <button id="radius-10">Radius: 10</button>
+    <button id="radius-20">Radius: 20</button>
+  </div>
+  <div id="sphere-info">
+    Current sphere: Loading...
+  </div>
+  <div id="canvas-container"></div>
+
+  <\!-- Load Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <script type="module">
+    import { loadShape } from './js/components/shapeFactory.js';
+    import { init, animate } from './js/components/scene.js';
+    
+    // Initialize
+    init();
+    animate();
+    
+    // Create custom shape definition for spheres
+    function createSphereDefinition(radius) {
+      return {
+        type: 'sphere',
+        radius: radius,
+        widthSegments: 32,
+        heightSegments: 16
+      };
+    }
+    
+    // Update the info panel with current sphere details
+    function updateInfo(radius) {
+      const diameter = radius * 2;
+      const volume = (4/3) * Math.PI * Math.pow(radius, 3);
+      const surfaceArea = 4 * Math.PI * Math.pow(radius, 2);
+      
+      document.getElementById('sphere-info').innerHTML = `
+        <div><strong>Current Sphere:</strong></div>
+        <div>Radius: ${radius} units</div>
+        <div>Diameter: ${diameter} units</div>
+        <div>Volume: ${volume.toFixed(2)} cubic units</div>
+        <div>Surface Area: ${surfaceArea.toFixed(2)} square units</div>
+        <div>Check the grid scaling against the sphere size</div>
+      `;
+    }
+    
+    // Set up button click handlers
+    document.getElementById('radius-5').addEventListener('click', () => {
+      loadShape('sphere'); // First load default
+      setTimeout(() => {
+        const sphereDef = createSphereDefinition(5);
+        console.log("Creating sphere with radius 5");
+        loadShape('sphere'); // Custom shapes don't work with loadShape directly
+        window.dispatchEvent(new CustomEvent('shape-selected', { detail: sphereDef }));
+        updateInfo(5);
+      }, 100);
+    });
+    
+    document.getElementById('radius-10').addEventListener('click', () => {
+      loadShape('sphere'); // First load default
+      setTimeout(() => {
+        const sphereDef = createSphereDefinition(10);
+        console.log("Creating sphere with radius 10");
+        loadShape('sphere'); // Custom shapes don't work with loadShape directly
+        window.dispatchEvent(new CustomEvent('shape-selected', { detail: sphereDef }));
+        updateInfo(10);
+      }, 100);
+    });
+    
+    document.getElementById('radius-20').addEventListener('click', () => {
+      loadShape('sphere'); // First load default
+      setTimeout(() => {
+        const sphereDef = createSphereDefinition(20);
+        console.log("Creating sphere with radius 20");
+        loadShape('sphere'); // Custom shapes don't work with loadShape directly
+        window.dispatchEvent(new CustomEvent('shape-selected', { detail: sphereDef }));
+        updateInfo(20);
+      }, 100);
+    });
+    
+    // Initialize with radius 5
+    document.getElementById('radius-5').click();
+  </script>
+</body>
+</html>

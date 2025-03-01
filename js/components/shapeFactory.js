@@ -402,7 +402,9 @@ function updateCamerasForShape(shapeDef) {
     } else if (shapeDef.type === 'cylinder' || shapeDef.type === 'cone') {
         maxDimension = Math.max(shapeDef.radius * 2, shapeDef.height);
     } else if (shapeDef.type === 'sphere') {
-        maxDimension = shapeDef.radius * 2;
+        // For spheres, the maximum dimension is the diameter
+        // Add a small buffer for better visualization
+        maxDimension = shapeDef.radius * 2.2; // Slightly larger than diameter for better view
     }
     
     // Adjust the orthographic camera view sizes based on the shape's maximum dimension
@@ -467,6 +469,9 @@ function updateGridSize(shapeDef) {
     let gridSize = 20; // Default size
     let gridDivisions = 20;
     
+    // Store a log of the shape dimensions for debugging
+    console.log(`Updating grid for shape type: ${shapeDef.type} with dimensions:`, shapeDef);
+    
     if (shapeDef.type === 'triangularPrism') {
         const maxDimension = Math.max(shapeDef.height, shapeDef.base.side1, shapeDef.base.side2);
         gridSize = Math.max(20, maxDimension * 3); // At least 3x the max dimension or 20 units
@@ -479,11 +484,31 @@ function updateGridSize(shapeDef) {
         const maxDimension = Math.max(shapeDef.radius * 2, shapeDef.height);
         gridSize = Math.max(20, maxDimension * 3);
     } else if (shapeDef.type === 'sphere') {
-        gridSize = Math.max(20, shapeDef.radius * 6); // 3x diameter
+        // For spheres, we need to scale based on diameter (2 * radius)
+        // Ensure larger spheres have proportionally larger grids
+        const diameter = shapeDef.radius * 2;
+        gridSize = diameter * 3; // 3x diameter for appropriate coverage - removed minimum to allow proper scaling
+        
+        // Log the calculated grid size for debugging
+        console.log(`Sphere radius: ${shapeDef.radius}, diameter: ${diameter}, grid size: ${gridSize}`);
     }
     
     // Round to nearest multiple of 5 for cleaner grid lines
     gridSize = Math.ceil(gridSize / 5) * 5;
+    
+    // Calculate grid divisions based on size to maintain consistent grid density
+    // This ensures larger objects don't just have larger grid cells
+    // For spheres, we want to ensure the grid divisions scale with the radius
+    if (shapeDef.type === 'sphere') {
+        // Make divisions proportional to radius so each grid square remains a consistent size
+        // For a radius of 100, we want enough divisions to have roughly 1-unit grid squares
+        gridDivisions = Math.floor(gridSize);
+    } else {
+        gridDivisions = Math.max(20, Math.floor(gridSize / 2));
+    }
+    
+    // Log final grid size and divisions
+    console.log(`Final grid configuration - size: ${gridSize}, divisions: ${gridDivisions}, shape type: ${shapeDef.type}`);
     
     // Update the main grid helper
     if (mainScene) {
@@ -492,16 +517,22 @@ function updateGridSize(shapeDef) {
             return !(child instanceof THREE.GridHelper && child.userData.isMainGrid);
         });
         
-        // Create and add new grid helper with updated size
+        // Create and add new grid helper with updated size and divisions
         const gridHelper = new THREE.GridHelper(gridSize, gridDivisions);
         gridHelper.userData.isMainGrid = true;
+        gridHelper.userData.size = gridSize; // Store size for debugging
+        gridHelper.userData.divisions = gridDivisions; // Store divisions for debugging
         mainScene.add(gridHelper);
     }
     
     // Calculate orthographic view grid size - slightly smaller than main grid
     // but still proportional to the shape size
     const orthoGridSize = Math.max(10, Math.floor(gridSize * 0.6));
-    const orthoGridDivisions = 10;
+    
+    // Scale orthographic grid divisions proportionally to maintain consistent density
+    const orthoGridDivisions = Math.max(10, Math.floor(gridDivisions * 0.6));
+    
+    console.log(`Orthographic view grids - size: ${orthoGridSize}, divisions: ${orthoGridDivisions}`);
     
     // Create grid material
     const gridMaterial = new THREE.LineBasicMaterial({ 
