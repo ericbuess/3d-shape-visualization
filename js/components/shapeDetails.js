@@ -457,24 +457,24 @@ export function updateShapeDetails(shape) {
                         const centerY = 200;
                         const cellSize = width*30;
                         
-                        // Calculate face positions in cross layout
+                        // Calculate face positions in cross layout with spacing between faces
                         const topX = centerX - cellSize/2;
-                        const topY = centerY - cellSize - cellSize;
+                        const topY = centerY - cellSize - cellSize - 10; // Added gap
                         
-                        const leftX = centerX - cellSize - cellSize/2;
+                        const leftX = centerX - cellSize - cellSize/2 - 10; // Added gap
                         const leftY = centerY - cellSize;
                         
                         const frontX = centerX - cellSize/2;
                         const frontY = centerY - cellSize;
                         
-                        const rightX = centerX + cellSize/2;
+                        const rightX = centerX + cellSize/2 + 10; // Added gap
                         const rightY = centerY - cellSize;
                         
                         const bottomX = centerX - cellSize/2;
-                        const bottomY = centerY;
+                        const bottomY = centerY + 10; // Added gap
                         
                         const backX = centerX - cellSize/2;
-                        const backY = centerY + cellSize;
+                        const backY = centerY + cellSize + 20; // Added gap
                         
                         return `
                             <!-- Top face - light blue -->
@@ -498,15 +498,17 @@ export function updateShapeDetails(shape) {
                             <!-- Grid lines for all 6 faces -->
                             ${(() => {
                                 let gridLines = '';
+                                const scale = 30; // Consistent scale factor
+                                
                                 // Generate grid lines for each face
                                 const createGridForFace = (x, y) => {
                                     let lines = '';
                                     for (let i = 1; i < width; i++) {
-                                        lines += `<line x1="${x + i*30}" y1="${y}" x2="${x + i*30}" y2="${y + cellSize}" 
+                                        lines += `<line x1="${x + i*scale}" y1="${y}" x2="${x + i*scale}" y2="${y + cellSize}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                     }
                                     for (let i = 1; i < width; i++) {
-                                        lines += `<line x1="${x}" y1="${y + i*30}" x2="${x + cellSize}" y2="${y + i*30}" 
+                                        lines += `<line x1="${x}" y1="${y + i*scale}" x2="${x + cellSize}" y2="${y + i*scale}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                     }
                                     return lines;
@@ -520,16 +522,26 @@ export function updateShapeDetails(shape) {
                                 gridLines += createGridForFace(bottomX, bottomY);
                                 gridLines += createGridForFace(backX, backY);
                                 
-                                // Create fold lines
+                                // Create fold lines - dashed lines to show folding
                                 let foldLines = '';
+                                
+                                // Connect top to front
                                 foldLines += `<line x1="${topX}" y1="${topY + cellSize}" x2="${topX + cellSize}" y2="${topY + cellSize}" 
                                                  stroke="#000" stroke-width="2" stroke-dasharray="5,3"/>`;
+                                
+                                // Connect front to bottom                 
                                 foldLines += `<line x1="${frontX}" y1="${frontY + cellSize}" x2="${frontX + cellSize}" y2="${frontY + cellSize}" 
                                                  stroke="#000" stroke-width="2" stroke-dasharray="5,3"/>`;
+                                
+                                // Connect bottom to back
                                 foldLines += `<line x1="${bottomX}" y1="${bottomY + cellSize}" x2="${bottomX + cellSize}" y2="${bottomY + cellSize}" 
                                                  stroke="#000" stroke-width="2" stroke-dasharray="5,3"/>`;
+                                
+                                // Connect left to front
                                 foldLines += `<line x1="${leftX + cellSize}" y1="${leftY}" x2="${leftX + cellSize}" y2="${leftY + cellSize}" 
                                                  stroke="#000" stroke-width="2" stroke-dasharray="5,3"/>`;
+                                
+                                // Connect front to right
                                 foldLines += `<line x1="${frontX + cellSize}" y1="${frontY}" x2="${frontX + cellSize}" y2="${frontY + cellSize}" 
                                                  stroke="#000" stroke-width="2" stroke-dasharray="5,3"/>`;
                                 
@@ -555,9 +567,18 @@ export function updateShapeDetails(shape) {
                             <rect x="${backX + width*15 - 15}" y="${backY + width*15 - 7}" width="30" height="14" fill="white" fill-opacity="0.8"/>
                             <text x="${backX + width*15}" y="${backY + width*15}" text-anchor="middle" font-size="12" font-weight="bold" fill="#000">Back</text>
                             
-                            <!-- Dimension indicators -->
+                            <!-- Dimension indicators - show all dimensions -->
+                            <!-- Top dimension -->
+                            <line x1="${topX - 10}" y1="${topY + cellSize/2}" x2="${topX + cellSize + 10}" y2="${topY + cellSize/2}" stroke="#000" stroke-width="1"/>
+                            <text x="${topX + cellSize/2}" y="${topY + cellSize/2 - 10}" text-anchor="middle" font-size="12" fill="#000">${width} units</text>
+                            
+                            <!-- Front dimension -->
                             <line x1="${frontX - 10}" y1="${frontY - 10}" x2="${frontX + cellSize + 10}" y2="${frontY - 10}" stroke="#000" stroke-width="1"/>
                             <text x="${frontX + cellSize/2}" y="${frontY - 20}" text-anchor="middle" font-size="12" fill="#000">${width} units</text>
+                            
+                            <!-- Right dimension -->
+                            <line x1="${rightX}" y1="${rightY - 10}" x2="${rightX + cellSize}" y2="${rightY - 10}" stroke="#000" stroke-width="1"/>
+                            <text x="${rightX + cellSize/2}" y="${rightY - 20}" text-anchor="middle" font-size="12" fill="#000">${width} units</text>
                         `;
                     })()}
                 </svg>
@@ -582,28 +603,28 @@ export function updateShapeDetails(shape) {
                     ${(() => {
                         const centerX = 200;
                         const centerY = 200;
-                        const cellWidth = width*20;
-                        const cellHeight = height*20;
-                        const cellDepth = length*20;
+                        const cellWidth = width*18;  // Scale factor adjusted for better spacing
+                        const cellHeight = height*18; // Scale factor adjusted for better spacing
+                        const cellDepth = length*18;  // Scale factor adjusted for better spacing
                         
-                        // Calculate positions
+                        // Calculate positions with more spacing between faces
                         const topX = centerX - cellWidth/2;
-                        const topY = centerY - cellDepth - cellHeight;
+                        const topY = centerY - cellDepth - cellHeight - 10; // Added gap
                         
                         const frontX = centerX - cellWidth/2;
                         const frontY = centerY - cellHeight;
                         
-                        const rightX = centerX + cellWidth/2;
+                        const rightX = centerX + cellWidth/2 + 10; // Added gap
                         const rightY = centerY - cellHeight;
                         
-                        const leftX = centerX - cellWidth/2 - cellDepth;
+                        const leftX = centerX - cellWidth/2 - cellDepth - 10; // Added gap
                         const leftY = centerY - cellHeight;
                         
                         const bottomX = centerX - cellWidth/2;
-                        const bottomY = centerY;
+                        const bottomY = centerY + 10; // Added gap
                         
                         const backX = centerX - cellWidth/2;
-                        const backY = centerY + cellHeight;
+                        const backY = centerY + cellDepth + 20; // Added gap
                         
                         return `
                             <!-- Top face - light blue -->
@@ -627,77 +648,78 @@ export function updateShapeDetails(shape) {
                             <!-- Grid lines for all faces -->
                             ${(() => {
                                 let gridLines = '';
+                                const scale = 18; // Consistent scale factor
                                 
-                                // Top face grid
+                                // Top face grid (width × length)
                                 for (let i = 1; i < width; i++) {
-                                    gridLines += `<line x1="${topX + i*20}" y1="${topY}" x2="${topX + i*20}" y2="${topY + cellDepth}" 
+                                    gridLines += `<line x1="${topX + i*scale}" y1="${topY}" x2="${topX + i*scale}" y2="${topY + cellDepth}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                 }
                                 
                                 for (let i = 1; i < length; i++) {
-                                    gridLines += `<line x1="${topX}" y1="${topY + i*20}" x2="${topX + cellWidth}" y2="${topY + i*20}" 
+                                    gridLines += `<line x1="${topX}" y1="${topY + i*scale}" x2="${topX + cellWidth}" y2="${topY + i*scale}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                 }
                                 
-                                // Front face grid
+                                // Front face grid (width × height)
                                 for (let i = 1; i < width; i++) {
-                                    gridLines += `<line x1="${frontX + i*20}" y1="${frontY}" x2="${frontX + i*20}" y2="${frontY + cellHeight}" 
+                                    gridLines += `<line x1="${frontX + i*scale}" y1="${frontY}" x2="${frontX + i*scale}" y2="${frontY + cellHeight}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                 }
                                 
                                 for (let i = 1; i < height; i++) {
-                                    gridLines += `<line x1="${frontX}" y1="${frontY + i*20}" x2="${frontX + cellWidth}" y2="${frontY + i*20}" 
+                                    gridLines += `<line x1="${frontX}" y1="${frontY + i*scale}" x2="${frontX + cellWidth}" y2="${frontY + i*scale}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                 }
                                 
-                                // Right face grid
+                                // Right face grid (length × height)
                                 for (let i = 1; i < length; i++) {
-                                    gridLines += `<line x1="${rightX + i*20}" y1="${rightY}" x2="${rightX + i*20}" y2="${rightY + cellHeight}" 
+                                    gridLines += `<line x1="${rightX + i*scale}" y1="${rightY}" x2="${rightX + i*scale}" y2="${rightY + cellHeight}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                 }
                                 
                                 for (let i = 1; i < height; i++) {
-                                    gridLines += `<line x1="${rightX}" y1="${rightY + i*20}" x2="${rightX + cellDepth}" y2="${rightY + i*20}" 
+                                    gridLines += `<line x1="${rightX}" y1="${rightY + i*scale}" x2="${rightX + cellDepth}" y2="${rightY + i*scale}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                 }
                                 
-                                // Left face grid
+                                // Left face grid (length × height)
                                 for (let i = 1; i < length; i++) {
-                                    gridLines += `<line x1="${leftX + i*20}" y1="${leftY}" x2="${leftX + i*20}" y2="${leftY + cellHeight}" 
+                                    gridLines += `<line x1="${leftX + i*scale}" y1="${leftY}" x2="${leftX + i*scale}" y2="${leftY + cellHeight}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                 }
                                 
                                 for (let i = 1; i < height; i++) {
-                                    gridLines += `<line x1="${leftX}" y1="${leftY + i*20}" x2="${leftX + cellDepth}" y2="${leftY + i*20}" 
+                                    gridLines += `<line x1="${leftX}" y1="${leftY + i*scale}" x2="${leftX + cellDepth}" y2="${leftY + i*scale}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                 }
                                 
-                                // Bottom face grid
+                                // Bottom face grid (width × length)
                                 for (let i = 1; i < width; i++) {
-                                    gridLines += `<line x1="${bottomX + i*20}" y1="${bottomY}" x2="${bottomX + i*20}" y2="${bottomY + cellDepth}" 
+                                    gridLines += `<line x1="${bottomX + i*scale}" y1="${bottomY}" x2="${bottomX + i*scale}" y2="${bottomY + cellDepth}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                 }
                                 
                                 for (let i = 1; i < length; i++) {
-                                    gridLines += `<line x1="${bottomX}" y1="${bottomY + i*20}" x2="${bottomX + cellWidth}" y2="${bottomY + i*20}" 
+                                    gridLines += `<line x1="${bottomX}" y1="${bottomY + i*scale}" x2="${bottomX + cellWidth}" y2="${bottomY + i*scale}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                 }
                                 
-                                // Back face grid
+                                // Back face grid (width × height)
                                 for (let i = 1; i < width; i++) {
-                                    gridLines += `<line x1="${backX + i*20}" y1="${backY}" x2="${backX + i*20}" y2="${backY + cellHeight}" 
+                                    gridLines += `<line x1="${backX + i*scale}" y1="${backY}" x2="${backX + i*scale}" y2="${backY + cellHeight}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                 }
                                 
                                 for (let i = 1; i < height; i++) {
-                                    gridLines += `<line x1="${backX}" y1="${backY + i*20}" x2="${backX + cellWidth}" y2="${backY + i*20}" 
+                                    gridLines += `<line x1="${backX}" y1="${backY + i*scale}" x2="${backX + cellWidth}" y2="${backY + i*scale}" 
                                                       stroke="#000" stroke-width="0.5" stroke-opacity="0.3"/>`;
                                 }
                                 
-                                // Fold lines
+                                // Fold lines - keep dashed lines to show where folding occurs
                                 let foldLines = '';
                                 
-                                // Top to front fold
+                                // Top to front fold - connect these pieces
                                 foldLines += `<line x1="${topX}" y1="${topY + cellDepth}" x2="${topX + cellWidth}" y2="${topY + cellDepth}" 
                                                   stroke="#000" stroke-width="2" stroke-dasharray="5,3"/>`;
                                 
@@ -709,11 +731,11 @@ export function updateShapeDetails(shape) {
                                 foldLines += `<line x1="${bottomX}" y1="${bottomY + cellDepth}" x2="${bottomX + cellWidth}" y2="${bottomY + cellDepth}" 
                                                   stroke="#000" stroke-width="2" stroke-dasharray="5,3"/>`;
                                 
-                                // Left to front fold
+                                // Connect left to front fold
                                 foldLines += `<line x1="${leftX + cellDepth}" y1="${leftY}" x2="${leftX + cellDepth}" y2="${leftY + cellHeight}" 
                                                   stroke="#000" stroke-width="2" stroke-dasharray="5,3"/>`;
                                 
-                                // Front to right fold
+                                // Connect front to right fold
                                 foldLines += `<line x1="${frontX + cellWidth}" y1="${frontY}" x2="${frontX + cellWidth}" y2="${frontY + cellHeight}" 
                                                   stroke="#000" stroke-width="2" stroke-dasharray="5,3"/>`;
                                 
@@ -740,14 +762,29 @@ export function updateShapeDetails(shape) {
                             <text x="${leftX + cellDepth/2}" y="${leftY + cellHeight/2}" text-anchor="middle" font-size="12" font-weight="bold" fill="#000">Left</text>
                             
                             <!-- Dimension indicators -->
+                            <!-- Front face width -->
                             <line x1="${frontX}" y1="${frontY - 10}" x2="${frontX + cellWidth}" y2="${frontY - 10}" stroke="#000" stroke-width="1"/>
                             <text x="${frontX + cellWidth/2}" y="${frontY - 15}" text-anchor="middle" font-size="10" fill="#000">${width} units</text>
                             
+                            <!-- Front face height -->
                             <line x1="${frontX - 10}" y1="${frontY}" x2="${frontX - 10}" y2="${frontY + cellHeight}" stroke="#000" stroke-width="1"/>
-                            <text x="${frontX - 20}" y="${frontY + cellHeight/2}" text-anchor="middle" font-size="10" fill="#000">${height} units</text>
+                            <text x="${frontX - 25}" y="${frontY + cellHeight/2}" text-anchor="middle" font-size="10" fill="#000">${height} units</text>
                             
-                            <line x1="${rightX + cellDepth + 10}" y1="${rightY}" x2="${rightX + cellDepth + 10}" y2="${rightY + cellHeight}" stroke="#000" stroke-width="1"/>
-                            <text x="${rightX + cellDepth + 20}" y="${rightY + cellHeight/2}" text-anchor="middle" font-size="10" fill="#000">${length} units</text>
+                            <!-- Right face length (fixed to correctly show length) -->
+                            <line x1="${rightX}" y1="${rightY - 10}" x2="${rightX + cellDepth}" y2="${rightY - 10}" stroke="#000" stroke-width="1"/>
+                            <text x="${rightX + cellDepth/2}" y="${rightY - 20}" text-anchor="middle" font-size="10" fill="#000">${length} units</text>
+                            
+                            <!-- Left face length (fixed to correctly show length) -->
+                            <line x1="${leftX}" y1="${leftY - 10}" x2="${leftX + cellDepth}" y2="${leftY - 10}" stroke="#000" stroke-width="1"/>
+                            <text x="${leftX + cellDepth/2}" y="${leftY - 20}" text-anchor="middle" font-size="10" fill="#000">${length} units</text>
+                            
+                            <!-- Top face dimensions (moved to prevent overlap) -->
+                            <line x1="${topX - 10}" y1="${topY + cellDepth/2}" x2="${topX - 10}" y2="${topY + cellDepth/2}" stroke="none"/>
+                            <text x="${topX + cellWidth/2}" y="${topY - 10}" text-anchor="middle" font-size="10" fill="#000">Width: ${width} units × Length: ${length} units</text>
+                            
+                            <!-- Bottom face dimensions (moved to prevent overlap) -->
+                            <line x1="${bottomX - 10}" y1="${bottomY + cellDepth/2}" x2="${bottomX - 10}" y2="${bottomY + cellDepth/2}" stroke="none"/>
+                            <text x="${bottomX + cellWidth/2}" y="${bottomY + cellDepth + 20}" text-anchor="middle" font-size="10" fill="#000">Width: ${width} units × Length: ${length} units</text>
                         `;
                     })()}
                 </svg>
@@ -1449,23 +1486,23 @@ export function updateShapeDetails(shape) {
         
         // Create an enhanced diagram for sphere with more detailed visualization and educational content
         const netHTML = `
-            <svg width="100%" height="400" viewBox="0 0 500 400" preserveAspectRatio="xMidYMid meet" style="display: block; min-width: 100%; max-width: 100%; margin: 0 auto;">
+            <svg width="100%" height="450" viewBox="0 0 500 450" preserveAspectRatio="xMidYMid meet" style="display: block; min-width: 100%; max-width: 100%; margin: 0 auto;">
                 <!-- Sphere projections: globe view and stereographic projection -->
                 
                 <!-- 3D globe representation -->
-                <circle cx="150" cy="175" r="${radius * 10}" fill="#bbdefb" stroke="#2196f3" stroke-width="2"/>
+                <circle cx="150" cy="150" r="${radius * 10}" fill="#bbdefb" stroke="#2196f3" stroke-width="2"/>
                 
                 <!-- Equator line -->
-                <ellipse cx="150" cy="175" rx="${radius * 10}" ry="${radius * 3}" stroke="#2196f3" stroke-width="1.5" fill="none"/>
+                <ellipse cx="150" cy="150" rx="${radius * 10}" ry="${radius * 3}" stroke="#2196f3" stroke-width="1.5" fill="none"/>
                 
                 <!-- Prime meridian -->
-                <line x1="150" y1="${175 - radius * 10}" x2="150" y2="${175 + radius * 10}" stroke="#2196f3" stroke-width="1.5"/>
+                <line x1="150" y1="${150 - radius * 10}" x2="150" y2="${150 + radius * 10}" stroke="#2196f3" stroke-width="1.5"/>
                 
                 <!-- Grid lines for latitude and longitude -->
                 ${(() => {
                     let lines = '';
                     const centerX = 150;
-                    const centerY = 175;
+                    const centerY = 150;
                     const sphereRadius = radius * 10;
                     
                     // Latitude lines (parallel to equator)
@@ -1490,16 +1527,28 @@ export function updateShapeDetails(shape) {
                 })()}
                 
                 <!-- Highlight great circle -->
-                <ellipse cx="150" cy="175" rx="${radius * 10}" ry="${radius * 10}" stroke="#e74c3c" stroke-width="1.5" fill="none"/>
+                <ellipse cx="150" cy="150" rx="${radius * 10}" ry="${radius * 10}" stroke="#e74c3c" stroke-width="1.5" fill="none"/>
+                
+                <!-- Labels -->
+                <rect x="100" y="90" width="100" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="150" y="102" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Sphere</text>
+                
+                <rect x="90" y="115" width="120" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="150" y="127" text-anchor="middle" font-size="12" fill="#e74c3c">Great Circle</text>
+                
+                <!-- Dimensions for sphere -->
+                <line x1="150" y1="${150 + radius * 10 + 10}" x2="150" y2="${150 + radius * 10 + 30}" stroke="#000" stroke-width="1"/>
+                <line x1="125" y1="${150 + radius * 10 + 20}" x2="175" y2="${150 + radius * 10 + 20}" stroke="#000" stroke-width="1"/>
+                <text x="150" y="${150 + radius * 10 + 45}" text-anchor="middle" font-size="12" fill="#000">r=${radius} units</text>
                 
                 <!-- Map projection (mercator-style) -->
-                <rect x="300" y="${175 - radius * 10}" width="${2 * Math.PI * radius * 5}" height="${2 * radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                <rect x="300" y="80" width="${2 * Math.PI * radius * 5}" height="${2 * radius * 10}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
                 
                 <!-- Grid lines for map projection -->
                 ${(() => {
                     let lines = '';
                     const startX = 300;
-                    const startY = 175 - radius * 10;
+                    const startY = 80;
                     const width = 2 * Math.PI * radius * 5;
                     const height = 2 * radius * 10;
                     
@@ -1520,29 +1569,18 @@ export function updateShapeDetails(shape) {
                     return lines;
                 })()}
                 
-                <!-- Labels -->
-                <rect x="100" y="115" width="100" height="16" fill="white" fill-opacity="0.8"/>
-                <text x="150" y="127" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Sphere</text>
+                <rect x="360" y="60" width="140" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="430" y="72" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Map Projection</text>
                 
-                <rect x="90" y="140" width="120" height="16" fill="white" fill-opacity="0.8"/>
-                <text x="150" y="152" text-anchor="middle" font-size="12" fill="#e74c3c">Great Circle</text>
+                <!-- Dimensions for map -->
+                <line x1="300" y1="${80 + 2 * radius * 10 + 10}" x2="${300 + 2 * Math.PI * radius * 5}" y2="${80 + 2 * radius * 10 + 10}" stroke="#000" stroke-width="1"/>
+                <text x="${300 + Math.PI * radius * 5}" y="${80 + 2 * radius * 10 + 25}" text-anchor="middle" font-size="12" fill="#000">Circumference = 2πr = ${(2 * Math.PI * radius).toFixed(2)} units</text>
                 
-                <rect x="360" y="115" width="140" height="16" fill="white" fill-opacity="0.8"/>
-                <text x="430" y="127" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">Map Projection</text>
-                
-                <!-- Dimensions -->
-                <line x1="150" y1="${175 + radius * 10 + 10}" x2="150" y2="${175 + radius * 10 + 30}" stroke="#000" stroke-width="1"/>
-                <line x1="125" y1="${175 + radius * 10 + 20}" x2="175" y2="${175 + radius * 10 + 20}" stroke="#000" stroke-width="1"/>
-                <text x="150" y="${175 + radius * 10 + 45}" text-anchor="middle" font-size="12" fill="#000">r=${radius} units</text>
-                
-                <line x1="300" y1="${175 + radius * 10 + 10}" x2="${300 + 2 * Math.PI * radius * 5}" y2="${175 + radius * 10 + 10}" stroke="#000" stroke-width="1"/>
-                <text x="${300 + Math.PI * radius * 5}" y="${175 + radius * 10 + 25}" text-anchor="middle" font-size="12" fill="#000">Circumference = 2πr = ${(2 * Math.PI * radius).toFixed(2)} units</text>
-                
-                <!-- Great Circle with 3D effect -->
-                <ellipse cx="150" cy="255" rx="${radius * 5}" ry="${radius * 5}" fill="#e3f2fd" stroke="#e74c3c" stroke-width="2"/>
-                <line x1="150" y1="255" x2="${150 + radius * 5}" y2="255" stroke="#000" stroke-width="0.5" stroke-opacity="0.7"/>
-                <text x="${150 + radius * 2.5}" y="245" text-anchor="middle" font-size="10" fill="#000">r=${radius} units</text>
-                <text x="150" y="290" text-anchor="middle" font-size="12" fill="#e74c3c">Great Circle Cross-Section</text>
+                <!-- Great Circle with 3D effect - moved down -->
+                <ellipse cx="250" cy="320" rx="${radius * 5}" ry="${radius * 5}" fill="#e3f2fd" stroke="#e74c3c" stroke-width="2"/>
+                <line x1="250" y1="320" x2="${250 + radius * 5}" y2="320" stroke="#000" stroke-width="0.5" stroke-opacity="0.7"/>
+                <text x="${250 + radius * 2.5}" y="310" text-anchor="middle" font-size="10" fill="#000">r=${radius} units</text>
+                <text x="250" y="355" text-anchor="middle" font-size="12" fill="#e74c3c">Great Circle Cross-Section</text>
             </svg>
             
             <p class="net-description">Unlike polyhedra, a sphere doesn't have a flat net. Instead, we show representations: a 3D globe, a map projection, and a great circle.</p>
