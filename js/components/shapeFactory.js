@@ -5,7 +5,8 @@ import {
     createCube,
     createCylinder,
     createCone,
-    createSphere
+    createSphere,
+    createTesseract
 } from '../shapes/index.js';
 // Get the transition value directly from the DOM to avoid circular imports
 import { updateShapeDetails } from './shapeDetails.js';
@@ -73,6 +74,10 @@ const shapeDefinitions = {
         radius: 2,
         widthSegments: 32,
         heightSegments: 16
+    },
+    tesseract: {
+        type: 'tesseract',
+        size: 3
     }
 };
 
@@ -245,6 +250,10 @@ export function createShape(shapeDef) {
                 );
                 break;
                 
+            case 'tesseract':
+                currentShape = createTesseract(shapeDef.size);
+                break;
+                
             default:
                 console.error('Unknown shape type:', shapeDef.type);
                 return;
@@ -405,6 +414,9 @@ function updateCamerasForShape(shapeDef) {
         // For spheres, the maximum dimension is the diameter
         // Add a small buffer for better visualization
         maxDimension = shapeDef.radius * 2.2; // Slightly larger than diameter for better view
+    } else if (shapeDef.type === 'tesseract') {
+        // For tesseract, use the size with a buffer to account for the inner cube
+        maxDimension = shapeDef.size * 1.2;
     }
     
     // Adjust the orthographic camera view sizes based on the shape's maximum dimension
@@ -491,6 +503,12 @@ function updateGridSize(shapeDef) {
         
         // Log the calculated grid size for debugging
         console.log(`Sphere radius: ${shapeDef.radius}, diameter: ${diameter}, grid size: ${gridSize}`);
+    } else if (shapeDef.type === 'tesseract') {
+        // For tesseract, we use the outer cube size
+        gridSize = Math.max(20, shapeDef.size * 3);
+        
+        // Log the calculated grid size for debugging
+        console.log(`Tesseract size: ${shapeDef.size}, grid size: ${gridSize}`);
     }
     
     // Round to nearest multiple of 5 for cleaner grid lines
@@ -828,7 +846,7 @@ export function parseAndGenerateShape(description) {
             shapeType = 'triangularPrism';
         } else if (description.match(/rectangular\s*prism/i) || description.match(/cuboid/i)) {
             shapeType = 'rectangularPrism';
-        } else if (description.match(/cube/i)) {
+        } else if (description.match(/cube/i) && !description.match(/hyper|tesseract/i)) {
             shapeType = 'cube';
         } else if (description.match(/cylinder/i)) {
             shapeType = 'cylinder';
@@ -836,6 +854,8 @@ export function parseAndGenerateShape(description) {
             shapeType = 'cone';
         } else if (description.match(/sphere|ball|circle/i)) {
             shapeType = 'sphere';
+        } else if (description.match(/tesseract|hypercube|4d\s*cube/i)) {
+            shapeType = 'tesseract';
         }
         
         if (!shapeType) {
@@ -852,6 +872,8 @@ export function parseAndGenerateShape(description) {
                 shapeType = 'cone';
             } else if (description.match(/round|circular/i)) {
                 shapeType = 'sphere';
+            } else if (description.match(/4d|four\s*dimension|nested\s*cube/i)) {
+                shapeType = 'tesseract';
             }
         }
         
@@ -1047,10 +1069,28 @@ export function parseAndGenerateShape(description) {
             createShape(customShape);
             return true;
             
+        } else if (shapeType === 'tesseract') {
+            const size = sizeMatch ? parseInt(sizeMatch[1]) : 
+                      (allNumbers && allNumbers.length > 0 ? parseInt(allNumbers[0]) : 3);
+            
+            // Check if dimension exceeds the maximum allowed
+            if (size > MAX_DIMENSION) {
+                alert(`Maximum dimension allowed is ${MAX_DIMENSION} units. Please reduce the size of your shape.`);
+                return false;
+            }
+            
+            const customShape = {
+                type: 'tesseract',
+                size: size
+            };
+            
+            createShape(customShape);
+            return true;
+            
         } else {
             // Attempt to infer shape from numbers available
             if (allNumbers && allNumbers.length === 1) {
-                // One number = probably a sphere or cube
+                // One number = probably a sphere or cube or tesseract
                 const size = parseInt(allNumbers[0]);
                 // Check dimension limit
                 if (description.match(/round|circle/i)) {
@@ -1063,6 +1103,16 @@ export function parseAndGenerateShape(description) {
                         radius: size,
                         widthSegments: 32,
                         heightSegments: 16
+                    };
+                    createShape(customShape);
+                } else if (description.match(/4d|hyper|tesseract/i)) {
+                    if (size > MAX_DIMENSION) {
+                        alert(`Maximum dimension allowed is ${MAX_DIMENSION} units. Please reduce the size of your shape.`);
+                        return false;
+                    }
+                    const customShape = {
+                        type: 'tesseract',
+                        size: size
                     };
                     createShape(customShape);
                 } else {

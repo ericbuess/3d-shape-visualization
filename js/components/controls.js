@@ -240,6 +240,11 @@ export function setupEventListeners() {
         setActiveButton('sphere-btn');
     });
     
+    document.getElementById('tesseract-btn').addEventListener('click', () => {
+        loadShape('tesseract');
+        setActiveButton('tesseract-btn');
+    });
+    
     document.getElementById('custom-btn').addEventListener('click', () => {
         // Focus on the word problem textarea
         document.getElementById('shape-description').focus();
@@ -619,6 +624,12 @@ function setupMobileControls() {
         loadShape('sphere');
         setActiveButton('mobile-sphere-btn');
         setActiveButton('sphere-btn');
+    });
+    
+    document.getElementById('mobile-tesseract-btn').addEventListener('click', () => {
+        loadShape('tesseract');
+        setActiveButton('mobile-tesseract-btn');
+        setActiveButton('tesseract-btn');
     });
     
     document.getElementById('mobile-custom-btn').addEventListener('click', () => {
