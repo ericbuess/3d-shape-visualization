@@ -1,4 +1,4 @@
-import { mainScene, topScene, frontScene, rightScene, leftScene, currentShape as currentShapeRef } from './scene.js';
+import { mainScene, topScene, frontScene, rightScene, leftScene, topCamera, frontCamera, rightCamera, leftCamera, mainCamera, mainControls, currentShape as currentShapeRef } from './scene.js';
 import { 
     createTriangularPrism, 
     createRectangularPrism, 
@@ -421,11 +421,13 @@ function updateCamerasForShape(shapeDef) {
         camera.updateProjectionMatrix();
     }
     
+    // Use cameras imported at the top of the file
+    
     // Update all orthographic cameras with the new view size
-    if (topCamera) updateOrthographicViewSize(topCamera, viewSize);
-    if (frontCamera) updateOrthographicViewSize(frontCamera, viewSize);
-    if (rightCamera) updateOrthographicViewSize(rightCamera, viewSize);
-    if (leftCamera) updateOrthographicViewSize(leftCamera, viewSize);
+    updateOrthographicViewSize(topCamera, viewSize);
+    updateOrthographicViewSize(frontCamera, viewSize);
+    updateOrthographicViewSize(rightCamera, viewSize);
+    updateOrthographicViewSize(leftCamera, viewSize);
     
     // Update mobile cameras as well
     if (window.mobileTopCamera) updateOrthographicViewSize(window.mobileTopCamera, viewSize);
