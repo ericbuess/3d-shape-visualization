@@ -1661,6 +1661,248 @@ export function updateShapeDetails(shape) {
         // Ensure tabs are set up properly
         setupTabEvents();
         
+    } else if (shape.type === 'tesseract') {
+        // Handle tesseract shape details
+        console.log("Rendering details for tesseract:", shape.dimensions);
+        const { size } = shape.dimensions;
+        
+        // Calculate properties for 4D tesseract
+        const cellVolume = Math.pow(size, 3);
+        const cells = 8; // Number of cubic cells in a tesseract
+        const hypervolume = Math.pow(size, 4); // 4D hypervolume
+        const hyperarea = 8 * Math.pow(size, 3); // Surface hyperarea
+        
+        // Generate HTML content for dimensions
+        const dimensionsHTML = `
+            <p><strong>Edge Length:</strong> ${size} units</p>
+            <p><strong>Dimension:</strong> 4D hypercube with edge length ${size} units</p>
+            <p><strong>Projected Size:</strong> ${size} × ${size} × ${size} units (3D projection)</p>
+            <p><strong>Inner Cube Size:</strong> ${(size * 0.6).toFixed(2)} units</p>
+        `;
+        
+        // Generate HTML content for properties
+        const propertiesHTML = `
+            <p><strong>Hypervolume (4D):</strong> ${hypervolume} tesseratic units</p>
+            <p><strong>Boundary Hyperarea:</strong> ${hyperarea} cubic units</p>
+            <p><strong>Number of Cubic Cells:</strong> 8</p>
+            <p><strong>Number of Cubes:</strong> 8</p>
+            <p><strong>Number of Squares:</strong> 24</p>
+            <p><strong>Number of Edges:</strong> 32</p>
+            <p><strong>Number of Vertices:</strong> 16</p>
+        `;
+        
+        // Generate HTML content for formulas with enhanced explanations
+        const formulasHTML = `
+            <h4>Tesseract Formulas</h4>
+            
+            <p><strong>Hypervolume (4D):</strong></p>
+            <span class="formula">V₄ = s⁴</span>
+            <div class="formula-explanation">
+                The 4D hypervolume of a tesseract is the fourth power of its side length.
+            </div>
+            <span class="formula">V₄ = ${size}⁴ = ${hypervolume} tesseratic units</span>
+            
+            <p><strong>Boundary Hyperarea:</strong></p>
+            <span class="formula">A₃ = 8s³</span>
+            <div class="formula-explanation">
+                The boundary of a tesseract consists of 8 cubes, each with volume s³.
+            </div>
+            <span class="formula">A₃ = 8 × ${size}³ = ${hyperarea} cubic units</span>
+            
+            <p><strong>Schläfli Symbol:</strong></p>
+            <span class="formula">{4,3,3}</span>
+            <div class="formula-explanation">
+                This notation describes how the tesseract is constructed: 4-sided faces (squares), 
+                3 meeting at each edge, and 3 cubes meeting at each face.
+            </div>
+            
+            <p><strong>Projected Space Diagonal:</strong></p>
+            <span class="formula">d = s√4 = 2s</span>
+            <div class="formula-explanation">
+                The space diagonal of a tesseract connects opposite vertices through the 4D hyperspace. 
+                In a 4D hypercube, the main diagonal length is calculated as s√4 = 2s.
+            </div>
+            <span class="formula">d = ${size} × 2 = ${size * 2} units</span>
+            
+            <div class="educational-note">
+                <p>A tesseract is the 4D analog of a cube, just as a cube is the 3D analog of a square.</p>
+                <p>While we cannot directly visualize 4D space, we can see projections or cross-sections of the tesseract in 3D space.</p>
+                <p>The 3D projection typically shows a cube within a cube, with corresponding vertices connected.</p>
+                <p>A tesseract "unfolds" into 8 cubes in 3D space, just as a cube unfolds into 6 squares in 2D space.</p>
+            </div>
+        `;
+        
+        // Generate HTML for net visualization (conceptual, since a true 4D net would be 3D)
+        const netHTML = `
+            <svg width="100%" height="500" viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet" style="display: block; min-width: 100%; max-width: 100%; margin: 0 auto;">
+                <!-- Conceptual visualization of a tesseract unfolding -->
+                
+                <!-- Central cube -->
+                <rect x="200" y="200" width="${size * 20}" height="${size * 20}" fill="#bbdefb" stroke="#2196f3" stroke-width="2"/>
+                
+                <!-- Top cube -->
+                <rect x="200" y="${200 - size * 25}" width="${size * 20}" height="${size * 20}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                
+                <!-- Bottom cube -->
+                <rect x="200" y="${200 + size * 25}" width="${size * 20}" height="${size * 20}" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                
+                <!-- Left cube -->
+                <rect x="${200 - size * 25}" y="200" width="${size * 20}" height="${size * 20}" fill="#c8e6fa" stroke="#2196f3" stroke-width="2"/>
+                
+                <!-- Right cube -->
+                <rect x="${200 + size * 25}" y="200" width="${size * 20}" height="${size * 20}" fill="#c8e6fa" stroke="#2196f3" stroke-width="2"/>
+                
+                <!-- Front cube (represents w-axis direction) -->
+                <rect x="${200 - size * 10}" y="${200 - size * 10}" width="${size * 20}" height="${size * 20}" fill="#a6d5f9" stroke="#2196f3" stroke-width="2" opacity="0.7"/>
+                
+                <!-- Back cube (represents w-axis direction) -->
+                <rect x="${200 + size * 10}" y="${200 + size * 10}" width="${size * 20}" height="${size * 20}" fill="#a6d5f9" stroke="#2196f3" stroke-width="2" opacity="0.7"/>
+                
+                <!-- Additional cube to represent 8th cell -->
+                <rect x="${200 + size * 10}" y="${200 - size * 10}" width="${size * 20}" height="${size * 20}" fill="#a6d5f9" stroke="#2196f3" stroke-width="2" opacity="0.7"/>
+                
+                <!-- Connection lines between cubes -->
+                <line x1="${200 + size * 10}" y1="200" x2="${200 + size * 25}" y2="200" stroke="#2196f3" stroke-width="1.5" stroke-dasharray="5,3"/>
+                <line x1="200" y1="${200 + size * 10}" x2="200" y2="${200 + size * 25}" stroke="#2196f3" stroke-width="1.5" stroke-dasharray="5,3"/>
+                <line x1="200" y1="${200 - size * 10}" x2="200" y2="${200 - size * 25}" stroke="#2196f3" stroke-width="1.5" stroke-dasharray="5,3"/>
+                <line x1="${200 - size * 10}" y1="200" x2="${200 - size * 25}" y2="200" stroke="#2196f3" stroke-width="1.5" stroke-dasharray="5,3"/>
+                
+                <!-- Labels -->
+                <rect x="${200 + size * 10 - 40}" y="${200 + size * 10 - 15}" width="80" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="${200 + size * 10}" y="${200 + size * 10 - 3}" text-anchor="middle" font-size="12" font-weight="bold" fill="#000">Central Cube</text>
+                
+                <rect x="${200 - size * 25 - 35}" y="${200 - 8}" width="70" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="${200 - size * 25 + 0}" y="${200 + 4}" text-anchor="middle" font-size="12" font-weight="bold" fill="#000">Left Cube</text>
+                
+                <rect x="${200 + size * 25 - 35}" y="${200 - 8}" width="70" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="${200 + size * 25 + 0}" y="${200 + 4}" text-anchor="middle" font-size="12" font-weight="bold" fill="#000">Right Cube</text>
+                
+                <rect x="${200 - 35}" y="${200 - size * 25 - 8}" width="70" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="${200 + 0}" y="${200 - size * 25 + 4}" text-anchor="middle" font-size="12" font-weight="bold" fill="#000">Top Cube</text>
+                
+                <rect x="${200 - 35}" y="${200 + size * 25 - 8}" width="70" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="${200 + 0}" y="${200 + size * 25 + 4}" text-anchor="middle" font-size="12" font-weight="bold" fill="#000">Bottom Cube</text>
+                
+                <rect x="${200 - size * 10 - 35}" y="${200 - size * 10 - 8}" width="70" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="${200 - size * 10 + 0}" y="${200 - size * 10 + 4}" text-anchor="middle" font-size="12" font-weight="bold" fill="#000">W- Cube</text>
+                
+                <rect x="${200 + size * 10 - 35}" y="${200 - size * 10 - 8}" width="70" height="16" fill="white" fill-opacity="0.8"/>
+                <text x="${200 + size * 10 + 0}" y="${200 - size * 10 + 4}" text-anchor="middle" font-size="12" font-weight="bold" fill="#000">W+ Cube</text>
+                
+                <!-- Dimension indicator -->
+                <text x="250" y="460" text-anchor="middle" font-size="14" fill="#000">Conceptual 3D Unfolding of a 4D Tesseract</text>
+                <text x="250" y="480" text-anchor="middle" font-size="12" fill="#000">Each cube has side length ${size} units</text>
+            </svg>
+            
+            <p class="net-description">Conceptual representation of a tesseract "unfolding" into 3D space showing its 8 cubic cells.</p>
+            
+            <div class="net-explanation">
+                <p><strong>Understanding Higher Dimensions:</strong> Just as a 3D cube unfolds into a 2D net of 6 squares, a 4D tesseract unfolds into a 3D "net" of 8 cubes.</p>
+                <ul>
+                    <li>Each cube is a 3D "face" (cell) of the tesseract</li>
+                    <li>In 4D, these cubes are all connected at right angles</li>
+                    <li>This diagram is a simplified representation - a true unfolding would involve 3D manipulations</li>
+                    <li>The central cube connects to the six cubes surrounding it, plus one more in the 4th dimension (w-axis)</li>
+                </ul>
+                <p>When "folded" back into 4D space, each cube becomes perpendicular to its connecting cubes in 4D, forming the full tesseract.</p>
+                <p>Just as we can only view 3D objects as 2D projections on a screen, we can only view 4D objects as 3D projections in our space.</p>
+            </div>
+        `;
+        
+        // Generate enhanced topology HTML with more educational content
+        const topologyHTML = `
+            <h4>Tesseract Topology</h4>
+            <table class="property-table">
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Number of Vertices</td>
+                    <td><span class="property-highlight">16</span></td>
+                </tr>
+                <tr>
+                    <td>Number of Edges</td>
+                    <td><span class="property-highlight">32</span></td>
+                </tr>
+                <tr>
+                    <td>Number of Square Faces</td>
+                    <td><span class="property-highlight">24</span></td>
+                </tr>
+                <tr>
+                    <td>Number of Cubic Cells</td>
+                    <td><span class="property-highlight">8</span></td>
+                </tr>
+                <tr>
+                    <td>Euler Characteristic (4D)</td>
+                    <td>V - E + F - C = 0 → <span class="property-highlight">16 - 32 + 24 - 8 = 0</span> ✓</td>
+                </tr>
+                <tr>
+                    <td>Regular Polytope</td>
+                    <td>Yes (one of the six regular 4D polytopes)</td>
+                </tr>
+                <tr>
+                    <td>Schläfli Symbol</td>
+                    <td>{4,3,3}</td>
+                </tr>
+                <tr>
+                    <td>Dual Polytope</td>
+                    <td>16-cell (hexadecachoron)</td>
+                </tr>
+            </table>
+            
+            <h4>Element Configuration</h4>
+            <table class="property-table">
+                <tr>
+                    <th>Configuration</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>Vertex Configuration</td>
+                    <td>4 edges, 6 squares, and 4 cubes meet at each vertex</td>
+                </tr>
+                <tr>
+                    <td>Edge Configuration</td>
+                    <td>2 vertices and 3 squares belong to each edge</td>
+                </tr>
+                <tr>
+                    <td>Face Configuration</td>
+                    <td>4 vertices, 4 edges, and 2 cubes belong to each square face</td>
+                </tr>
+                <tr>
+                    <td>Cell Configuration</td>
+                    <td>8 vertices, 12 edges, and 6 squares belong to each cubic cell</td>
+                </tr>
+            </table>
+            
+            <div class="educational-note">
+                <p><strong>Higher Dimensional Geometry:</strong> The tesseract exemplifies how patterns in lower dimensions extend to higher ones:</p>
+                <ul>
+                    <li>1D: Line segment (2 endpoints, 1 edge)</li>
+                    <li>2D: Square (4 vertices, 4 edges, 1 face)</li>
+                    <li>3D: Cube (8 vertices, 12 edges, 6 faces, 1 volume)</li>
+                    <li>4D: Tesseract (16 vertices, 32 edges, 24 faces, 8 cells, 1 hypervolume)</li>
+                </ul>
+                <p>The pattern continues with each dimension: doubling the vertices and adding more elements according to binomial coefficients.</p>
+                <p>The tesseract is one of six regular 4D polytopes, which are the 4D analogs of the Platonic solids.</p>
+            </div>
+        `;
+        
+        // Update all the panels
+        dimensionsDiv.innerHTML = dimensionsHTML;
+        propertiesDiv.innerHTML = propertiesHTML;
+        formulasDiv.innerHTML = formulasHTML;
+        netsDiv.innerHTML = netHTML;
+        topologyDiv.innerHTML = topologyHTML;
+        
+        if (mobileDimensionsDiv) mobileDimensionsDiv.innerHTML = dimensionsHTML;
+        if (mobilePropertiesDiv) mobilePropertiesDiv.innerHTML = propertiesHTML;
+        if (mobileFormulasDiv) mobileFormulasDiv.innerHTML = formulasHTML;
+        if (mobileNetsDiv) mobileNetsDiv.innerHTML = netHTML;
+        if (mobileTopologyDiv) mobileTopologyDiv.innerHTML = topologyHTML;
+        
+        // Ensure tabs are set up properly
+        setupTabEvents();
     } else {
         // For any other shapes, display a generic message
         console.log("Unknown shape type:", shape.type);
