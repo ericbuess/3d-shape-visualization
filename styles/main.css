@@ -195,7 +195,7 @@ select, input[type="text"] {
 }
 
 #projections-icon::after {
-    content: "⬛";
+    content: "◱";  /* Unicode symbol representing quadrants */
 }
 
 #view-icon::after {
