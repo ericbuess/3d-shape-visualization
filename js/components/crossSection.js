@@ -61,6 +61,9 @@ export function updateCrossSection() {
     } else if (currentShape.type === 'sphere') {
         const { radius } = currentShape.dimensions;
         planeConstant = (crossSectionPosition - 0.5) * radius * 2;
+    } else if (currentShape.type === 'tesseract') {
+        const { size } = currentShape.dimensions;
+        planeConstant = (crossSectionPosition - 0.5) * size;
     }
     
     plane.constant = planeConstant;
@@ -84,6 +87,9 @@ export function updateCrossSection() {
         } else if (currentShape.type === 'sphere') {
             const { radius } = currentShape.dimensions;
             planeSize = radius * 2 + 2; // Diameter + 2 (1 unit overflow on each side)
+        } else if (currentShape.type === 'tesseract') {
+            const { size } = currentShape.dimensions;
+            planeSize = size + 2; // Size + 2 (1 unit overflow on each side)
         }
     }
     
