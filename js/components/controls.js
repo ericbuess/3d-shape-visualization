@@ -64,14 +64,29 @@ export function setFrontView() {
     }
 }
 
-export function setSideView() {
+export function setRightSideView() {
     // Only reset if we're not currently dragging
     if (!mainControls || !mainControls.isMouseDown) {
         // First reset to baseline orientation
         resetViewOrientation();
-        // Then animate to the target view
+        // Then animate to the target view - right side (positive X axis)
         animateCameraToPosition(90, 0, 12);
     }
+}
+
+export function setLeftSideView() {
+    // Only reset if we're not currently dragging
+    if (!mainControls || !mainControls.isMouseDown) {
+        // First reset to baseline orientation
+        resetViewOrientation();
+        // Then animate to the target view - left side (negative X axis)
+        animateCameraToPosition(-90, 0, 12);
+    }
+}
+
+// For backwards compatibility
+export function setSideView() {
+    setRightSideView();
 }
 
 export function setIsometricView() {
@@ -273,7 +288,7 @@ export function setupEventListeners() {
     });
     
     document.getElementById('side-view-btn').addEventListener('click', () => {
-        setSideView();
+        setRightSideView();
         setActiveViewButton('side-view-btn');
     });
     
@@ -386,13 +401,13 @@ export function setupEventListeners() {
     
     document.getElementById('right-view').addEventListener('mouseup', function(e) {
         if (!mainControls || !mainControls.isMouseDown) {
-            setSideView();
+            setRightSideView();
         }
     });
     
     document.getElementById('left-view').addEventListener('mouseup', function(e) {
         if (!mainControls || !mainControls.isMouseDown) {
-            setSideView();
+            setLeftSideView();
         }
     });
     
@@ -408,6 +423,20 @@ export function setupEventListeners() {
         document.getElementById('mobile-front-view').addEventListener('mouseup', function(e) {
             if (!mainControls || !mainControls.isMouseDown) {
                 setFrontView();
+            }
+        });
+    }
+    if (document.getElementById('mobile-right-view')) {
+        document.getElementById('mobile-right-view').addEventListener('mouseup', function(e) {
+            if (!mainControls || !mainControls.isMouseDown) {
+                setRightSideView();
+            }
+        });
+    }
+    if (document.getElementById('mobile-left-view')) {
+        document.getElementById('mobile-left-view').addEventListener('mouseup', function(e) {
+            if (!mainControls || !mainControls.isMouseDown) {
+                setLeftSideView();
             }
         });
     }
@@ -615,7 +644,7 @@ function setupMobileControls() {
     });
     
     document.getElementById('mobile-side-view-btn').addEventListener('click', () => {
-        setSideView();
+        setRightSideView();
         setActiveViewButton('mobile-side-view-btn');
         setActiveViewButton('side-view-btn');
     });
