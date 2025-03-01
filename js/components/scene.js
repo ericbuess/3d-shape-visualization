@@ -95,8 +95,9 @@ function initMainView() {
     directionalLight.position.set(5, 10, 7);
     mainScene.add(directionalLight);
     
-    // Add grid helper
+    // Add grid helper - we'll set this to be updated when shapes change
     const gridHelper = new THREE.GridHelper(20, 20);
+    gridHelper.userData.isMainGrid = true; // Flag for identification
     mainScene.add(gridHelper);
     
     // Add axes helper

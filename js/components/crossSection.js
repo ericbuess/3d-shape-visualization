@@ -65,8 +65,27 @@ export function updateCrossSection() {
     
     plane.constant = planeConstant;
     
-    // Create plane helper - just the cross-section plane, not a solid section
-    const planeHelper = new THREE.PlaneHelper(plane, 10, 0xff0000);
+    // Calculate appropriate size for the plane helper based on shape dimensions
+    let planeSize = 10; // Default fallback size
+    
+    if (currentShape) {
+        if (currentShape.type === 'triangularPrism') {
+            const { height, side1, side2 } = currentShape.dimensions;
+            planeSize = Math.max(height, side1, side2) * 3; // Make plane 3x the max dimension
+        } else if (currentShape.type === 'rectangularPrism' || currentShape.type === 'cube') {
+            const { width, height, length } = currentShape.dimensions;
+            planeSize = Math.max(width, height, length) * 3;
+        } else if (currentShape.type === 'cylinder' || currentShape.type === 'cone') {
+            const { radius, height } = currentShape.dimensions;
+            planeSize = Math.max(radius * 2, height) * 3;
+        } else if (currentShape.type === 'sphere') {
+            const { radius } = currentShape.dimensions;
+            planeSize = radius * 6; // 3x diameter
+        }
+    }
+    
+    // Create plane helper with dynamic size - cross-section plane, not a solid section
+    const planeHelper = new THREE.PlaneHelper(plane, planeSize, 0xff0000);
     planeHelper.userData.isCrossSectionHelper = true; // Flag so it's not affected by other functions
     mainScene.add(planeHelper);
 }

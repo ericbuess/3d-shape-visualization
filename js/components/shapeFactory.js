@@ -288,6 +288,9 @@ export function createShape(shapeDef) {
         // Update camera to fit the shape
         updateCamerasForShape(shapeDef);
         
+        // Update grid size based on shape dimensions
+        updateGridSize(shapeDef);
+        
         // Update shape details in the UI - make sure this is called
         console.log("Shape created, updating shape details for UI...");
         try {
@@ -387,7 +390,8 @@ function clearShapes() {
 
 // Update camera settings based on the shape
 function updateCamerasForShape(shapeDef) {
-    let maxDimension = 5;
+    // Calculate maximum dimension of the shape
+    let maxDimension = 5; // Default fallback
     
     if (shapeDef.type === 'triangularPrism') {
         maxDimension = Math.max(shapeDef.height, shapeDef.base.side1, shapeDef.base.side2);
@@ -395,6 +399,267 @@ function updateCamerasForShape(shapeDef) {
         maxDimension = Math.max(shapeDef.width, shapeDef.height, shapeDef.length);
     } else if (shapeDef.type === 'cube') {
         maxDimension = shapeDef.size;
+    } else if (shapeDef.type === 'cylinder' || shapeDef.type === 'cone') {
+        maxDimension = Math.max(shapeDef.radius * 2, shapeDef.height);
+    } else if (shapeDef.type === 'sphere') {
+        maxDimension = shapeDef.radius * 2;
+    }
+    
+    // Adjust the orthographic camera view sizes based on the shape's maximum dimension
+    // Add a buffer factor to ensure the shape is properly visible with some margin
+    const viewSizeBuffer = 1.5; // Buffer factor to give space around the shape
+    let viewSize = Math.max(7, maxDimension * viewSizeBuffer); // At least 7 units or 1.5x max dimension
+    
+    // Update each orthographic camera
+    function updateOrthographicViewSize(camera, viewSize) {
+        if (!camera) return;
+        
+        camera.left = -viewSize;
+        camera.right = viewSize;
+        camera.top = viewSize;
+        camera.bottom = -viewSize;
+        camera.updateProjectionMatrix();
+    }
+    
+    // Update all orthographic cameras with the new view size
+    if (topCamera) updateOrthographicViewSize(topCamera, viewSize);
+    if (frontCamera) updateOrthographicViewSize(frontCamera, viewSize);
+    if (rightCamera) updateOrthographicViewSize(rightCamera, viewSize);
+    if (leftCamera) updateOrthographicViewSize(leftCamera, viewSize);
+    
+    // Update mobile cameras as well
+    if (window.mobileTopCamera) updateOrthographicViewSize(window.mobileTopCamera, viewSize);
+    if (window.mobileFrontCamera) updateOrthographicViewSize(window.mobileFrontCamera, viewSize);
+    if (window.mobileRightCamera) updateOrthographicViewSize(window.mobileRightCamera, viewSize);
+    if (window.mobileLeftCamera) updateOrthographicViewSize(window.mobileLeftCamera, viewSize);
+    
+    // Adjust main camera position based on shape size
+    // If the shape is larger, move the camera further away
+    if (mainCamera) {
+        // Get normalized camera direction
+        const camDir = new THREE.Vector3();
+        mainCamera.getWorldDirection(camDir);
+        camDir.multiplyScalar(-1); // Reverse direction to point away from the target
+        
+        // Scale distance based on shape size - move further away for larger shapes
+        const camDistance = Math.max(10, maxDimension * 3); // At least 10 units away or 3x max dimension
+        
+        // Set new camera position
+        const newPos = new THREE.Vector3()
+            .copy(camDir)
+            .multiplyScalar(camDistance);
+        
+        mainCamera.position.copy(newPos);
+        
+        // Make sure controls target is centered
+        if (mainControls) {
+            mainControls.target.set(0, 0, 0);
+            mainControls.update();
+        }
+    }
+}
+
+// Update grid size based on shape dimensions
+function updateGridSize(shapeDef) {
+    // Calculate appropriate grid size based on shape dimensions
+    let gridSize = 20; // Default size
+    let gridDivisions = 20;
+    
+    if (shapeDef.type === 'triangularPrism') {
+        const maxDimension = Math.max(shapeDef.height, shapeDef.base.side1, shapeDef.base.side2);
+        gridSize = Math.max(20, maxDimension * 3); // At least 3x the max dimension or 20 units
+    } else if (shapeDef.type === 'rectangularPrism') {
+        const maxDimension = Math.max(shapeDef.width, shapeDef.height, shapeDef.length);
+        gridSize = Math.max(20, maxDimension * 3);
+    } else if (shapeDef.type === 'cube') {
+        gridSize = Math.max(20, shapeDef.size * 3);
+    } else if (shapeDef.type === 'cylinder' || shapeDef.type === 'cone') {
+        const maxDimension = Math.max(shapeDef.radius * 2, shapeDef.height);
+        gridSize = Math.max(20, maxDimension * 3);
+    } else if (shapeDef.type === 'sphere') {
+        gridSize = Math.max(20, shapeDef.radius * 6); // 3x diameter
+    }
+    
+    // Round to nearest multiple of 5 for cleaner grid lines
+    gridSize = Math.ceil(gridSize / 5) * 5;
+    
+    // Update the main grid helper
+    if (mainScene) {
+        // Remove existing grid helper
+        mainScene.children = mainScene.children.filter(child => {
+            return !(child instanceof THREE.GridHelper && child.userData.isMainGrid);
+        });
+        
+        // Create and add new grid helper with updated size
+        const gridHelper = new THREE.GridHelper(gridSize, gridDivisions);
+        gridHelper.userData.isMainGrid = true;
+        mainScene.add(gridHelper);
+    }
+    
+    // Calculate orthographic view grid size - slightly smaller than main grid
+    // but still proportional to the shape size
+    const orthoGridSize = Math.max(10, Math.floor(gridSize * 0.6));
+    const orthoGridDivisions = 10;
+    
+    // Create grid material
+    const gridMaterial = new THREE.LineBasicMaterial({ 
+        color: 0x000000, 
+        transparent: true, 
+        opacity: 0.2 
+    });
+    
+    // Function to create grid lines for a plane
+    function createGridLines(plane, size, divisions) {
+        const step = size / divisions;
+        const halfSize = size / 2;
+        
+        const points = [];
+        
+        // Create grid lines based on plane orientation
+        if (plane === 'xy') {
+            for (let i = -halfSize; i <= halfSize; i += step) {
+                points.push(
+                    new THREE.Vector3(i, -halfSize, 0),
+                    new THREE.Vector3(i, halfSize, 0)
+                );
+            }
+            
+            for (let i = -halfSize; i <= halfSize; i += step) {
+                points.push(
+                    new THREE.Vector3(-halfSize, i, 0),
+                    new THREE.Vector3(halfSize, i, 0)
+                );
+            }
+        } else if (plane === 'xz') {
+            for (let i = -halfSize; i <= halfSize; i += step) {
+                points.push(
+                    new THREE.Vector3(i, 0, -halfSize),
+                    new THREE.Vector3(i, 0, halfSize)
+                );
+            }
+            
+            for (let i = -halfSize; i <= halfSize; i += step) {
+                points.push(
+                    new THREE.Vector3(-halfSize, 0, i),
+                    new THREE.Vector3(halfSize, 0, i)
+                );
+            }
+        } else if (plane === 'yz') {
+            for (let i = -halfSize; i <= halfSize; i += step) {
+                points.push(
+                    new THREE.Vector3(0, i, -halfSize),
+                    new THREE.Vector3(0, i, halfSize)
+                );
+            }
+            
+            for (let i = -halfSize; i <= halfSize; i += step) {
+                points.push(
+                    new THREE.Vector3(0, -halfSize, i),
+                    new THREE.Vector3(0, halfSize, i)
+                );
+            }
+        }
+        
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        return new THREE.LineSegments(geometry, gridMaterial.clone());
+    }
+    
+    // Update orthographic view grids
+    if (topScene) {
+        // Remove existing grid
+        topScene.children = topScene.children.filter(child => {
+            return !(child instanceof THREE.LineSegments && !child.isAxis);
+        });
+        
+        // Add new grid
+        const gridHelperXZ = createGridLines('xz', orthoGridSize, orthoGridDivisions);
+        gridHelperXZ.userData.isGrid = true;
+        topScene.add(gridHelperXZ);
+    }
+    
+    if (frontScene) {
+        // Remove existing grid
+        frontScene.children = frontScene.children.filter(child => {
+            return !(child instanceof THREE.LineSegments && !child.isAxis);
+        });
+        
+        // Add new grid
+        const gridHelperXY = createGridLines('xy', orthoGridSize, orthoGridDivisions);
+        gridHelperXY.userData.isGrid = true;
+        frontScene.add(gridHelperXY);
+    }
+    
+    if (rightScene) {
+        // Remove existing grid
+        rightScene.children = rightScene.children.filter(child => {
+            return !(child instanceof THREE.LineSegments && !child.isAxis);
+        });
+        
+        // Add new grid
+        const gridHelperYZ = createGridLines('yz', orthoGridSize, orthoGridDivisions);
+        gridHelperYZ.userData.isGrid = true;
+        rightScene.add(gridHelperYZ);
+    }
+    
+    if (leftScene) {
+        // Remove existing grid
+        leftScene.children = leftScene.children.filter(child => {
+            return !(child instanceof THREE.LineSegments && !child.isAxis);
+        });
+        
+        // Add new grid
+        const gridHelperYZ = createGridLines('yz', orthoGridSize, orthoGridDivisions);
+        gridHelperYZ.userData.isGrid = true;
+        leftScene.add(gridHelperYZ);
+    }
+    
+    // Also update mobile view grids if they exist
+    if (window.mobileTopScene) {
+        // Remove existing grid
+        window.mobileTopScene.children = window.mobileTopScene.children.filter(child => {
+            return !(child instanceof THREE.LineSegments && !child.isAxis);
+        });
+        
+        // Add new grid
+        const mobileGridHelperXZ = createGridLines('xz', orthoGridSize, orthoGridDivisions);
+        mobileGridHelperXZ.userData.isGrid = true;
+        window.mobileTopScene.add(mobileGridHelperXZ);
+    }
+    
+    if (window.mobileFrontScene) {
+        // Remove existing grid
+        window.mobileFrontScene.children = window.mobileFrontScene.children.filter(child => {
+            return !(child instanceof THREE.LineSegments && !child.isAxis);
+        });
+        
+        // Add new grid
+        const mobileGridHelperXY = createGridLines('xy', orthoGridSize, orthoGridDivisions);
+        mobileGridHelperXY.userData.isGrid = true;
+        window.mobileFrontScene.add(mobileGridHelperXY);
+    }
+    
+    if (window.mobileRightScene) {
+        // Remove existing grid
+        window.mobileRightScene.children = window.mobileRightScene.children.filter(child => {
+            return !(child instanceof THREE.LineSegments && !child.isAxis);
+        });
+        
+        // Add new grid
+        const mobileGridHelperYZ = createGridLines('yz', orthoGridSize, orthoGridDivisions);
+        mobileGridHelperYZ.userData.isGrid = true;
+        window.mobileRightScene.add(mobileGridHelperYZ);
+    }
+    
+    if (window.mobileLeftScene) {
+        // Remove existing grid
+        window.mobileLeftScene.children = window.mobileLeftScene.children.filter(child => {
+            return !(child instanceof THREE.LineSegments && !child.isAxis);
+        });
+        
+        // Add new grid
+        const mobileGridHelperYZ = createGridLines('yz', orthoGridSize, orthoGridDivisions);
+        mobileGridHelperYZ.userData.isGrid = true;
+        window.mobileLeftScene.add(mobileGridHelperYZ);
     }
 }
 
