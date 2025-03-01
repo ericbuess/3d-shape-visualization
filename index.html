@@ -98,33 +98,26 @@
                     </div>
                 </div>
                 
-                <div class="slider-container">
-                    <label for="transition-slider">Shape Opacity:</label>
-                    <input type="range" id="transition-slider" min="0" max="100" value="100">
-                    <span id="slider-value">3D View</span>
-                </div>
-                
-                <div class="shape-details" id="shape-details">
-                    <h3>Shape Details</h3>
-                    <div class="tabs">
-                        <button class="tab-btn active" id="metrics-tab">Metrics</button>
-                        <button class="tab-btn" id="formulas-tab">Formulas</button>
-                        <button class="tab-btn" id="nets-tab">Nets</button>
-                        <button class="tab-btn" id="properties-tab">Properties</button>
-                    </div>
-                    <div class="tab-content active" id="metrics-content">
-                        <div id="shape-dimensions"></div>
-                        <div id="shape-properties"></div>
-                    </div>
-                    <div class="tab-content" id="formulas-content">
-                        <div id="shape-formulas"></div>
-                    </div>
-                    <div class="tab-content" id="nets-content">
-                        <div id="shape-nets" style="width: 100%">
+                <!-- Orthographic views -->
+                <div class="orthographic-views-container">
+                    <h3>2D Projections</h3>
+                    <div class="orthographic-views">
+                        <div class="view" id="top-view">
+                            <h4>Top View</h4>
+                            <div class="view-canvas" id="top-view-canvas"></div>
                         </div>
-                    </div>
-                    <div class="tab-content" id="properties-content">
-                        <div id="shape-topology"></div>
+                        <div class="view" id="front-view">
+                            <h4>Front View</h4>
+                            <div class="view-canvas" id="front-view-canvas"></div>
+                        </div>
+                        <div class="view" id="right-view">
+                            <h4>Right View</h4>
+                            <div class="view-canvas" id="right-view-canvas"></div>
+                        </div>
+                        <div class="view" id="left-view">
+                            <h4>Left View</h4>
+                            <div class="view-canvas" id="left-view-canvas"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -132,6 +125,30 @@
             <div class="controls-right">
                 <div class="view-options">
                     <div class="view-controls">
+                        <div class="shape-details" id="shape-details">
+                            <h3>Shape Details</h3>
+                            <div class="tabs">
+                                <button class="tab-btn active" id="metrics-tab">Metrics</button>
+                                <button class="tab-btn" id="formulas-tab">Formulas</button>
+                                <button class="tab-btn" id="nets-tab">Nets</button>
+                                <button class="tab-btn" id="properties-tab">Properties</button>
+                            </div>
+                            <div class="tab-content active" id="metrics-content">
+                                <div id="shape-dimensions"></div>
+                                <div id="shape-properties"></div>
+                            </div>
+                            <div class="tab-content" id="formulas-content">
+                                <div id="shape-formulas"></div>
+                            </div>
+                            <div class="tab-content" id="nets-content">
+                                <div id="shape-nets" style="width: 100%">
+                                </div>
+                            </div>
+                            <div class="tab-content" id="properties-content">
+                                <div id="shape-topology"></div>
+                            </div>
+                        </div>
+                        
                         <h3>View Controls</h3>
                         <div class="view-buttons">
                             <button id="top-view-btn">Top View</button>
@@ -161,27 +178,10 @@
                             </div>
                         </div>
                         
-                        <!-- Orthographic views -->
-                        <div class="orthographic-views-container">
-                            <h3>2D Projections</h3>
-                            <div class="orthographic-views">
-                                <div class="view" id="top-view">
-                                    <h4>Top View</h4>
-                                    <div class="view-canvas" id="top-view-canvas"></div>
-                                </div>
-                                <div class="view" id="front-view">
-                                    <h4>Front View</h4>
-                                    <div class="view-canvas" id="front-view-canvas"></div>
-                                </div>
-                                <div class="view" id="right-view">
-                                    <h4>Right View</h4>
-                                    <div class="view-canvas" id="right-view-canvas"></div>
-                                </div>
-                                <div class="view" id="left-view">
-                                    <h4>Left View</h4>
-                                    <div class="view-canvas" id="left-view-canvas"></div>
-                                </div>
-                            </div>
+                        <div class="slider-container">
+                            <label for="transition-slider">Shape Opacity:</label>
+                            <input type="range" id="transition-slider" min="0" max="100" value="100">
+                            <span id="slider-value">3D View</span>
                         </div>
                     </div>
                     
@@ -248,6 +248,7 @@
     <!-- Mobile Controls -->
     <div class="mobile-control-icons">
         <div class="control-icon" id="shape-icon"></div>
+        <div class="control-icon" id="projections-icon"></div>
         <div class="control-icon" id="view-icon"></div>
         <div class="control-icon" id="cross-section-icon"></div>
         <div class="control-icon" id="info-icon"></div>
@@ -293,18 +294,38 @@
         </div>
     </div>
     
+    <div class="mobile-panel" id="projections-panel" style="display: none;">
+        <button class="close-panel">&times;</button>
+        <div class="mobile-panel-title">2D Projections</div>
+        <div class="orthographic-views mobile">
+            <div class="view" id="mobile-top-view">
+                <h4>Top</h4>
+                <div class="view-canvas" id="mobile-top-view-canvas"></div>
+            </div>
+            <div class="view" id="mobile-front-view">
+                <h4>Front</h4>
+                <div class="view-canvas" id="mobile-front-view-canvas"></div>
+            </div>
+            <div class="view" id="mobile-right-view">
+                <h4>Right</h4>
+                <div class="view-canvas" id="mobile-right-view-canvas"></div>
+            </div>
+            <div class="view" id="mobile-left-view">
+                <h4>Left</h4>
+                <div class="view-canvas" id="mobile-left-view-canvas"></div>
+            </div>
+        </div>
+    </div>
+    
     <div class="mobile-panel" id="view-panel" style="display: none;">
         <button class="close-panel">&times;</button>
+        
         <div class="mobile-panel-title">View Controls</div>
         <div class="view-buttons">
             <button id="mobile-top-view-btn">Top</button>
             <button id="mobile-front-view-btn">Front</button>
             <button id="mobile-side-view-btn">Side</button>
             <button id="mobile-isometric-view-btn">Isometric</button>
-        </div>
-        <div class="slider-container">
-            <label for="mobile-transition-slider">Opacity:</label>
-            <input type="range" id="mobile-transition-slider" min="0" max="100" value="100">
         </div>
         <div class="camera-adjustments">
             <div class="adjustment-control">
@@ -321,27 +342,9 @@
             </div>
         </div>
         
-        <!-- Mobile 2D projections -->
-        <div class="mobile-orthographic-views-container">
-            <div class="mobile-panel-title">2D Projections</div>
-            <div class="orthographic-views mobile">
-                <div class="view" id="mobile-top-view">
-                    <h4>Top</h4>
-                    <div class="view-canvas" id="mobile-top-view-canvas"></div>
-                </div>
-                <div class="view" id="mobile-front-view">
-                    <h4>Front</h4>
-                    <div class="view-canvas" id="mobile-front-view-canvas"></div>
-                </div>
-                <div class="view" id="mobile-right-view">
-                    <h4>Right</h4>
-                    <div class="view-canvas" id="mobile-right-view-canvas"></div>
-                </div>
-                <div class="view" id="mobile-left-view">
-                    <h4>Left</h4>
-                    <div class="view-canvas" id="mobile-left-view-canvas"></div>
-                </div>
-            </div>
+        <div class="slider-container">
+            <label for="mobile-transition-slider">Shape Opacity:</label>
+            <input type="range" id="mobile-transition-slider" min="0" max="100" value="100">
         </div>
     </div>
     

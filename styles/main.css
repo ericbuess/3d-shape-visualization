@@ -194,6 +194,10 @@ select, input[type="text"] {
     content: "⬠";
 }
 
+#projections-icon::after {
+    content: "⬛";
+}
+
 #view-icon::after {
     content: "👁";
 }

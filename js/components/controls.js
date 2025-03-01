@@ -446,18 +446,20 @@ export function setupEventListeners() {
 function setupMobileControls() {
     // Control icons
     const shapeIcon = document.getElementById('shape-icon');
+    const projectionsIcon = document.getElementById('projections-icon');
     const viewIcon = document.getElementById('view-icon');
     const crossSectionIcon = document.getElementById('cross-section-icon');
     const infoIcon = document.getElementById('info-icon');
     
     // Panels
     const shapePanel = document.getElementById('shape-panel');
+    const projectionsPanel = document.getElementById('projections-panel');
     const viewPanel = document.getElementById('view-panel');
     const crossSectionPanel = document.getElementById('cross-section-panel');
     const infoPanel = document.getElementById('info-panel');
     
-    const allPanels = [shapePanel, viewPanel, crossSectionPanel, infoPanel];
-    const allIcons = [shapeIcon, viewIcon, crossSectionIcon, infoIcon];
+    const allPanels = [shapePanel, projectionsPanel, viewPanel, crossSectionPanel, infoPanel];
+    const allIcons = [shapeIcon, projectionsIcon, viewIcon, crossSectionIcon, infoIcon];
     
     // Close panels function
     const closePanels = () => {
@@ -517,61 +519,61 @@ function setupMobileControls() {
                     onOpen();
                 }
                 
-                // If this is the view panel, trigger resize on mobile view renderers
-                if (panel.id === 'view-panel') {
-                    // Add a small delay to ensure the panel is fully visible first
-                    setTimeout(() => {
-                        if (window.mobileTopRenderer) {
-                            const mobileTopContainer = document.getElementById('mobile-top-view-canvas');
-                            if (mobileTopContainer) {
-                                window.mobileTopRenderer.setSize(mobileTopContainer.clientWidth, mobileTopContainer.clientHeight);
-                            }
-                        }
-                        
-                        if (window.mobileFrontRenderer) {
-                            const mobileFrontContainer = document.getElementById('mobile-front-view-canvas');
-                            if (mobileFrontContainer) {
-                                window.mobileFrontRenderer.setSize(mobileFrontContainer.clientWidth, mobileFrontContainer.clientHeight);
-                            }
-                        }
-                        
-                        if (window.mobileRightRenderer) {
-                            const mobileRightContainer = document.getElementById('mobile-right-view-canvas');
-                            if (mobileRightContainer) {
-                                window.mobileRightRenderer.setSize(mobileRightContainer.clientWidth, mobileRightContainer.clientHeight);
-                            }
-                        }
-                        
-                        if (window.mobileLeftRenderer) {
-                            const mobileLeftContainer = document.getElementById('mobile-left-view-canvas');
-                            if (mobileLeftContainer) {
-                                window.mobileLeftRenderer.setSize(mobileLeftContainer.clientWidth, mobileLeftContainer.clientHeight);
-                            }
-                        }
-                        
-                        // Force a re-render of the mobile views
-                        if (window.mobileTopRenderer && window.mobileTopScene && window.mobileTopCamera) {
-                            window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
-                        }
-                        
-                        if (window.mobileFrontRenderer && window.mobileFrontScene && window.mobileFrontCamera) {
-                            window.mobileFrontRenderer.render(window.mobileFrontScene, window.mobileFrontCamera);
-                        }
-                        
-                        if (window.mobileRightRenderer && window.mobileRightScene && window.mobileRightCamera) {
-                            window.mobileRightRenderer.render(window.mobileRightScene, window.mobileRightCamera);
-                        }
-                        
-                        if (window.mobileLeftRenderer && window.mobileLeftScene && window.mobileLeftCamera) {
-                            window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
-                        }
-                    }, 100);
-                }
+                // No special handling needed for the view panel anymore since projections moved to their own panel
             }
         });
     }
     
     setupIconPanel(shapeIcon, shapePanel);
+    setupIconPanel(projectionsIcon, projectionsPanel, () => {
+        // Resize renderers for the 2D projections when panel opens
+        setTimeout(() => {
+            if (window.mobileTopRenderer) {
+                const mobileTopContainer = document.getElementById('mobile-top-view-canvas');
+                if (mobileTopContainer) {
+                    window.mobileTopRenderer.setSize(mobileTopContainer.clientWidth, mobileTopContainer.clientHeight);
+                }
+            }
+            
+            if (window.mobileFrontRenderer) {
+                const mobileFrontContainer = document.getElementById('mobile-front-view-canvas');
+                if (mobileFrontContainer) {
+                    window.mobileFrontRenderer.setSize(mobileFrontContainer.clientWidth, mobileFrontContainer.clientHeight);
+                }
+            }
+            
+            if (window.mobileRightRenderer) {
+                const mobileRightContainer = document.getElementById('mobile-right-view-canvas');
+                if (mobileRightContainer) {
+                    window.mobileRightRenderer.setSize(mobileRightContainer.clientWidth, mobileRightContainer.clientHeight);
+                }
+            }
+            
+            if (window.mobileLeftRenderer) {
+                const mobileLeftContainer = document.getElementById('mobile-left-view-canvas');
+                if (mobileLeftContainer) {
+                    window.mobileLeftRenderer.setSize(mobileLeftContainer.clientWidth, mobileLeftContainer.clientHeight);
+                }
+            }
+            
+            // Force a re-render of the mobile views
+            if (window.mobileTopRenderer && window.mobileTopScene && window.mobileTopCamera) {
+                window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
+            }
+            
+            if (window.mobileFrontRenderer && window.mobileFrontScene && window.mobileFrontCamera) {
+                window.mobileFrontRenderer.render(window.mobileFrontScene, window.mobileFrontCamera);
+            }
+            
+            if (window.mobileRightRenderer && window.mobileRightScene && window.mobileRightCamera) {
+                window.mobileRightRenderer.render(window.mobileRightScene, window.mobileRightCamera);
+            }
+            
+            if (window.mobileLeftRenderer && window.mobileLeftScene && window.mobileLeftCamera) {
+                window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
+            }
+        }, 100);
+    });
     setupIconPanel(viewIcon, viewPanel);
     setupIconPanel(crossSectionIcon, crossSectionPanel, () => {
         // Sync checkbox state in the modal with the actual state
