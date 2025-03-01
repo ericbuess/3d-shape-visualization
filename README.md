@@ -16,7 +16,7 @@ Simply open `index.html` in a web browser to start using the application.
 
 ## Deployment
 
-This project is deployed on Netlify at: https://3d-shape-visualization.netlify.app
+This project is deployed on Netlify at: https://3d-shape-visualizations.netlify.app
 
 ## Technologies
 
