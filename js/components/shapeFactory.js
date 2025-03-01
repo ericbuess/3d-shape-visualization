@@ -260,11 +260,30 @@ export function createShape(shapeDef) {
         if (rightScene) rightScene.add(currentShape.rightMesh);
         if (leftScene) leftScene.add(currentShape.leftMesh);
         
-        // Add the shape to mobile scenes if available
-        if (window.mobileTopScene) window.mobileTopScene.add(currentShape.topMesh.clone());
-        if (window.mobileFrontScene) window.mobileFrontScene.add(currentShape.frontMesh.clone());
-        if (window.mobileRightScene) window.mobileRightScene.add(currentShape.rightMesh.clone());
-        if (window.mobileLeftScene) window.mobileLeftScene.add(currentShape.leftMesh.clone());
+        // Add the shape to mobile scenes if available - create real clones
+        if (window.mobileTopScene && currentShape.topMesh) {
+            const clonedTopMesh = currentShape.topMesh.clone();
+            currentShape.mobileTopMesh = clonedTopMesh;
+            window.mobileTopScene.add(clonedTopMesh);
+        }
+        
+        if (window.mobileFrontScene && currentShape.frontMesh) {
+            const clonedFrontMesh = currentShape.frontMesh.clone();
+            currentShape.mobileFrontMesh = clonedFrontMesh;
+            window.mobileFrontScene.add(clonedFrontMesh);
+        }
+        
+        if (window.mobileRightScene && currentShape.rightMesh) {
+            const clonedRightMesh = currentShape.rightMesh.clone();
+            currentShape.mobileRightMesh = clonedRightMesh;
+            window.mobileRightScene.add(clonedRightMesh);
+        }
+        
+        if (window.mobileLeftScene && currentShape.leftMesh) {
+            const clonedLeftMesh = currentShape.leftMesh.clone();
+            currentShape.mobileLeftMesh = clonedLeftMesh;
+            window.mobileLeftScene.add(clonedLeftMesh);
+        }
         
         // Update camera to fit the shape
         updateCamerasForShape(shapeDef);
@@ -304,29 +323,61 @@ function clearShapes() {
         if (rightScene) rightScene.remove(currentShape.rightMesh);
         if (leftScene) leftScene.remove(currentShape.leftMesh);
         
-        // Clear from mobile scenes if they exist
+        // Clear specific mobile meshes if they were created
+        if (window.mobileTopScene && currentShape.mobileTopMesh) {
+            window.mobileTopScene.remove(currentShape.mobileTopMesh);
+        }
+        
+        if (window.mobileFrontScene && currentShape.mobileFrontMesh) {
+            window.mobileFrontScene.remove(currentShape.mobileFrontMesh);
+        }
+        
+        if (window.mobileRightScene && currentShape.mobileRightMesh) {
+            window.mobileRightScene.remove(currentShape.mobileRightMesh);
+        }
+        
+        if (window.mobileLeftScene && currentShape.mobileLeftMesh) {
+            window.mobileLeftScene.remove(currentShape.mobileLeftMesh);
+        }
+        
+        // Also do a full clean of mobile scenes to be thorough
+        // Keep only grid and light elements
         if (window.mobileTopScene) {
             window.mobileTopScene.children = window.mobileTopScene.children.filter(child => {
-                return child instanceof THREE.GridHelper || child instanceof THREE.Light;
+                return child instanceof THREE.GridHelper || child instanceof THREE.Light || child instanceof THREE.Group || child instanceof THREE.AxesHelper || child instanceof THREE.LineSegments;
             });
         }
         
         if (window.mobileFrontScene) {
             window.mobileFrontScene.children = window.mobileFrontScene.children.filter(child => {
-                return child instanceof THREE.GridHelper || child instanceof THREE.Light;
+                return child instanceof THREE.GridHelper || child instanceof THREE.Light || child instanceof THREE.Group || child instanceof THREE.AxesHelper || child instanceof THREE.LineSegments;
             });
         }
         
         if (window.mobileRightScene) {
             window.mobileRightScene.children = window.mobileRightScene.children.filter(child => {
-                return child instanceof THREE.GridHelper || child instanceof THREE.Light;
+                return child instanceof THREE.GridHelper || child instanceof THREE.Light || child instanceof THREE.Group || child instanceof THREE.AxesHelper || child instanceof THREE.LineSegments;
             });
         }
         
         if (window.mobileLeftScene) {
             window.mobileLeftScene.children = window.mobileLeftScene.children.filter(child => {
-                return child instanceof THREE.GridHelper || child instanceof THREE.Light;
+                return child instanceof THREE.GridHelper || child instanceof THREE.Light || child instanceof THREE.Group || child instanceof THREE.AxesHelper || child instanceof THREE.LineSegments;
             });
+        }
+        
+        // Force re-render all mobile views to ensure the scene is updated
+        if (window.mobileTopRenderer && window.mobileTopScene && window.mobileTopCamera) {
+            window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
+        }
+        if (window.mobileFrontRenderer && window.mobileFrontScene && window.mobileFrontCamera) {
+            window.mobileFrontRenderer.render(window.mobileFrontScene, window.mobileFrontCamera);
+        }
+        if (window.mobileRightRenderer && window.mobileRightScene && window.mobileRightCamera) {
+            window.mobileRightRenderer.render(window.mobileRightScene, window.mobileRightCamera);
+        }
+        if (window.mobileLeftRenderer && window.mobileLeftScene && window.mobileLeftCamera) {
+            window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
         }
     }
     
@@ -429,11 +480,37 @@ function updateShapeTransition() {
     if (currentShape.rightMesh) currentShape.rightMesh.visible = true;
     if (currentShape.leftMesh) currentShape.leftMesh.visible = true;
     
+    // Make sure mobile orthographic views are also always visible
+    if (currentShape.mobileTopMesh) currentShape.mobileTopMesh.visible = true;
+    if (currentShape.mobileFrontMesh) currentShape.mobileFrontMesh.visible = true;
+    if (currentShape.mobileRightMesh) currentShape.mobileRightMesh.visible = true;
+    if (currentShape.mobileLeftMesh) currentShape.mobileLeftMesh.visible = true;
+    
     // Update opacity of orthographic views based on transition value without scaling
     if (currentShape.topMesh) updateMeshOpacity(currentShape.topMesh, transitionValue);
     if (currentShape.frontMesh) updateMeshOpacity(currentShape.frontMesh, transitionValue);
     if (currentShape.rightMesh) updateMeshOpacity(currentShape.rightMesh, transitionValue);
     if (currentShape.leftMesh) updateMeshOpacity(currentShape.leftMesh, transitionValue);
+    
+    // Also update opacity for mobile views
+    if (currentShape.mobileTopMesh) updateMeshOpacity(currentShape.mobileTopMesh, transitionValue);
+    if (currentShape.mobileFrontMesh) updateMeshOpacity(currentShape.mobileFrontMesh, transitionValue);
+    if (currentShape.mobileRightMesh) updateMeshOpacity(currentShape.mobileRightMesh, transitionValue);
+    if (currentShape.mobileLeftMesh) updateMeshOpacity(currentShape.mobileLeftMesh, transitionValue);
+    
+    // Force render the mobile views to ensure changes are visible
+    if (window.mobileTopRenderer && window.mobileTopScene && window.mobileTopCamera) {
+        window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
+    }
+    if (window.mobileFrontRenderer && window.mobileFrontScene && window.mobileFrontCamera) {
+        window.mobileFrontRenderer.render(window.mobileFrontScene, window.mobileFrontCamera);
+    }
+    if (window.mobileRightRenderer && window.mobileRightScene && window.mobileRightCamera) {
+        window.mobileRightRenderer.render(window.mobileRightScene, window.mobileRightCamera);
+    }
+    if (window.mobileLeftRenderer && window.mobileLeftScene && window.mobileLeftCamera) {
+        window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
+    }
 }
 
 // (Removed duplicate function)

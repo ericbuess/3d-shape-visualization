@@ -742,24 +742,66 @@ function initMobileOrthographicViews(gridHelperXZ, gridHelperXY, gridHelperYZ) {
         window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
     }
     
-    // Add event listener for the panel becoming visible to handle resize
+    // Add event listeners for panels becoming visible to handle resize
     const viewPanel = document.getElementById('view-panel');
-    if (viewPanel) {
-        // Set up a MutationObserver to watch for class changes
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.attributeName === 'class') {
-                    if (viewPanel.classList.contains('active')) {
-                        // Panel became visible - resize and re-render mobile views after short delay
-                        setTimeout(() => resizeMobileViewRenderers(), 100);
+    const projectionsPanel = document.getElementById('projections-panel');
+    
+    function setupPanelObserver(panel) {
+        if (panel) {
+            // Set up a MutationObserver to watch for class changes
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'class' || mutation.attributeName === 'style') {
+                        if (panel.classList.contains('active') && panel.style.display !== 'none') {
+                            // Panel became visible - resize and re-render mobile views with multiple attempts
+                            setTimeout(() => resizeMobileViewRenderers(), 100);
+                            setTimeout(() => resizeMobileViewRenderers(), 300);
+                            setTimeout(() => resizeMobileViewRenderers(), 500);
+                            setTimeout(() => resizeMobileViewRenderers(), 800);
+                        }
                     }
+                });
+            });
+            
+            // Start observing the panel for class and style changes
+            observer.observe(panel, { attributes: true });
+            
+            // Also attach direct event listeners for display changes
+            panel.addEventListener('transitionend', () => {
+                if (panel.classList.contains('active') && panel.style.display !== 'none') {
+                    // Trigger multiple resize attempts on transition end
+                    setTimeout(() => resizeMobileViewRenderers(), 100);
+                    setTimeout(() => resizeMobileViewRenderers(), 300);
+                    setTimeout(() => resizeMobileViewRenderers(), 600);
                 }
             });
-        });
-        
-        // Start observing the panel for class changes
-        observer.observe(viewPanel, { attributes: true });
+            
+            // Add click handler to ensure renderers update when panel is activated
+            panel.querySelector('.mobile-panel-title')?.addEventListener('click', () => {
+                if (panel.classList.contains('active')) {
+                    setTimeout(() => resizeMobileViewRenderers(), 100);
+                    setTimeout(() => resizeMobileViewRenderers(), 500);
+                }
+            });
+        }
     }
+    
+    // Set up observers for both panels
+    setupPanelObserver(viewPanel);
+    setupPanelObserver(projectionsPanel);
+    
+    // Also handle the mobile icon click events to ensure views get refreshed
+    document.getElementById('projections-icon')?.addEventListener('click', () => {
+        setTimeout(() => resizeMobileViewRenderers(), 100);
+        setTimeout(() => resizeMobileViewRenderers(), 300);
+        setTimeout(() => resizeMobileViewRenderers(), 600);
+    });
+    
+    document.getElementById('view-icon')?.addEventListener('click', () => {
+        setTimeout(() => resizeMobileViewRenderers(), 100);
+        setTimeout(() => resizeMobileViewRenderers(), 300);
+        setTimeout(() => resizeMobileViewRenderers(), 600);
+    });
     
     console.log("Mobile orthographic views initialized successfully");
 }
@@ -781,6 +823,14 @@ function resizeMobileViewRenderers() {
         camera.updateProjectionMatrix();
     }
     
+    // Force renderers to refresh their grid and axis helpers
+    function refreshRendererScene(renderer, scene, camera) {
+        if (renderer && scene && camera) {
+            // Force a render to update the view with the grid and axis helpers
+            renderer.render(scene, camera);
+        }
+    }
+    
     // Handle top view
     if (window.mobileTopRenderer) {
         const container = document.getElementById('mobile-top-view-canvas');
@@ -792,7 +842,7 @@ function resizeMobileViewRenderers() {
             if (window.mobileTopScene && window.mobileTopCamera) {
                 // Update camera to maintain square proportions
                 updateMobileOrthographicCamera(window.mobileTopCamera, container);
-                window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
+                refreshRendererScene(window.mobileTopRenderer, window.mobileTopScene, window.mobileTopCamera);
             }
         }
     }
@@ -808,7 +858,7 @@ function resizeMobileViewRenderers() {
             if (window.mobileFrontScene && window.mobileFrontCamera) {
                 // Update camera to maintain square proportions
                 updateMobileOrthographicCamera(window.mobileFrontCamera, container);
-                window.mobileFrontRenderer.render(window.mobileFrontScene, window.mobileFrontCamera);
+                refreshRendererScene(window.mobileFrontRenderer, window.mobileFrontScene, window.mobileFrontCamera);
             }
         }
     }
@@ -824,7 +874,7 @@ function resizeMobileViewRenderers() {
             if (window.mobileRightScene && window.mobileRightCamera) {
                 // Update camera to maintain square proportions
                 updateMobileOrthographicCamera(window.mobileRightCamera, container);
-                window.mobileRightRenderer.render(window.mobileRightScene, window.mobileRightCamera);
+                refreshRendererScene(window.mobileRightRenderer, window.mobileRightScene, window.mobileRightCamera);
             }
         }
     }
@@ -840,7 +890,7 @@ function resizeMobileViewRenderers() {
             if (window.mobileLeftScene && window.mobileLeftCamera) {
                 // Update camera to maintain square proportions
                 updateMobileOrthographicCamera(window.mobileLeftCamera, container);
-                window.mobileLeftRenderer.render(window.mobileLeftScene, window.mobileLeftCamera);
+                refreshRendererScene(window.mobileLeftRenderer, window.mobileLeftScene, window.mobileLeftCamera);
             }
         }
     }
@@ -980,10 +1030,21 @@ export function animate() {
         // Render scenes - check if renderers exist before trying to use them
         renderAllViews();
         
-        // Render mobile orthographic views - only if their panels are visible
+        // Render mobile orthographic views - check both info panel and projections panel
         const infoPanel = document.getElementById('info-panel');
-        if (infoPanel && infoPanel.style.display === 'block' && infoPanel.classList.contains('active')) {
-            // Panel is visible, render the mobile views
+        const projectionsPanel = document.getElementById('projections-panel');
+        
+        // Check if either panel that contains views is visible
+        const isInfoPanelActive = infoPanel && 
+                                 infoPanel.style.display !== 'none' && 
+                                 infoPanel.classList.contains('active');
+                                 
+        const isProjectionsPanelActive = projectionsPanel && 
+                                        projectionsPanel.style.display !== 'none' && 
+                                        projectionsPanel.classList.contains('active');
+        
+        if (isInfoPanelActive || isProjectionsPanelActive) {
+            // A panel with views is visible, render the mobile views
             if (window.mobileTopRenderer && window.mobileTopScene && window.mobileTopCamera) {
                 window.mobileTopRenderer.render(window.mobileTopScene, window.mobileTopCamera);
             }
@@ -1004,10 +1065,16 @@ export function animate() {
         console.error("Error in animation loop:", error);
     }
     
-    // Check on every frame that info panel is hidden if not active
+    // Check on every frame that panels are hidden if not active
     const infoPanel = document.getElementById('info-panel');
     if (infoPanel && !infoPanel.classList.contains('active')) {
         infoPanel.style.display = 'none';
+    }
+    
+    // Also check projections panel
+    const projectionsPanel = document.getElementById('projections-panel');
+    if (projectionsPanel && !projectionsPanel.classList.contains('active')) {
+        projectionsPanel.style.display = 'none';
     }
 }
 

@@ -73,6 +73,16 @@
     margin: 0 auto; /* Center the canvas */
 }
 
+.mobile-panel .view-canvas {
+    width: 120px;
+    height: 120px; /* Maintain square aspect ratio for mobile */
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin: 0 auto; /* Center the canvas */
+    overflow: visible; /* Ensure grid lines are visible */
+}
+
 /* Bottom Section */
 .bottom-section {
     display: flex;
