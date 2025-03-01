@@ -66,21 +66,24 @@ export function updateCrossSection() {
     plane.constant = planeConstant;
     
     // Calculate appropriate size for the plane helper based on shape dimensions
-    let planeSize = 10; // Default fallback size
+    let planeSize = 12; // Default fallback size (default + 2 units)
     
     if (currentShape) {
         if (currentShape.type === 'triangularPrism') {
             const { height, side1, side2 } = currentShape.dimensions;
-            planeSize = Math.max(height, side1, side2) * 3; // Make plane 3x the max dimension
+            const maxDimension = Math.max(height, side1, side2);
+            planeSize = maxDimension + 2; // Max dimension + 2 (1 unit overflow on each side)
         } else if (currentShape.type === 'rectangularPrism' || currentShape.type === 'cube') {
             const { width, height, length } = currentShape.dimensions;
-            planeSize = Math.max(width, height, length) * 3;
+            const maxDimension = Math.max(width, height, length);
+            planeSize = maxDimension + 2;
         } else if (currentShape.type === 'cylinder' || currentShape.type === 'cone') {
             const { radius, height } = currentShape.dimensions;
-            planeSize = Math.max(radius * 2, height) * 3;
+            const maxDimension = Math.max(radius * 2, height);
+            planeSize = maxDimension + 2;
         } else if (currentShape.type === 'sphere') {
             const { radius } = currentShape.dimensions;
-            planeSize = radius * 6; // 3x diameter
+            planeSize = radius * 2 + 2; // Diameter + 2 (1 unit overflow on each side)
         }
     }
     
