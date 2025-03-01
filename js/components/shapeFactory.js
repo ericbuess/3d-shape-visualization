@@ -813,6 +813,9 @@ function updateShapeTransition() {
 
 // (Removed duplicate function)
 
+// Maximum dimension allowed for any shape
+const MAX_DIMENSION = 20;
+
 // Parse custom shape description and generate the shape
 export function parseAndGenerateShape(description) {
     console.log("Parsing custom shape description:", description);
@@ -896,6 +899,12 @@ export function parseAndGenerateShape(description) {
             const side2 = sidesMatch ? parseInt(sidesMatch[2]) : 
                       (allNumbers && allNumbers.length > 2 ? parseInt(allNumbers[2]) : 4);
             
+            // Check if any dimension exceeds the maximum allowed
+            if (height > MAX_DIMENSION || side1 > MAX_DIMENSION || side2 > MAX_DIMENSION) {
+                alert(`Maximum dimension allowed is ${MAX_DIMENSION} units. Please reduce the size of your shape.`);
+                return false;
+            }
+            
             const customShape = {
                 type: 'triangularPrism',
                 height: height,
@@ -918,6 +927,12 @@ export function parseAndGenerateShape(description) {
             const length = lengthMatch ? parseInt(lengthMatch[1]) : 
                         (allNumbers && allNumbers.length > 2 ? parseInt(allNumbers[2]) : 5);
             
+            // Check if any dimension exceeds the maximum allowed
+            if (height > MAX_DIMENSION || width > MAX_DIMENSION || length > MAX_DIMENSION) {
+                alert(`Maximum dimension allowed is ${MAX_DIMENSION} units. Please reduce the size of your shape.`);
+                return false;
+            }
+            
             const customShape = {
                 type: 'rectangularPrism',
                 height: height,
@@ -931,6 +946,12 @@ export function parseAndGenerateShape(description) {
         } else if (shapeType === 'cube') {
             const size = sizeMatch ? parseInt(sizeMatch[1]) : 
                       (allNumbers && allNumbers.length > 0 ? parseInt(allNumbers[0]) : 3);
+            
+            // Check if dimension exceeds the maximum allowed
+            if (size > MAX_DIMENSION) {
+                alert(`Maximum dimension allowed is ${MAX_DIMENSION} units. Please reduce the size of your shape.`);
+                return false;
+            }
             
             const customShape = {
                 type: 'cube',
@@ -951,6 +972,13 @@ export function parseAndGenerateShape(description) {
                 radius = parseInt(diameterMatch[1]) / 2;
             } else {
                 radius = allNumbers && allNumbers.length > 1 ? parseInt(allNumbers[1]) : 2;
+            }
+            
+            // Check if any dimension exceeds the maximum allowed
+            // For radius, we check the diameter (2*radius)
+            if (height > MAX_DIMENSION || (radius * 2) > MAX_DIMENSION) {
+                alert(`Maximum dimension allowed is ${MAX_DIMENSION} units. Please reduce the size of your shape.`);
+                return false;
             }
             
             const customShape = {
@@ -976,6 +1004,13 @@ export function parseAndGenerateShape(description) {
                 radius = allNumbers && allNumbers.length > 1 ? parseInt(allNumbers[1]) : 2;
             }
             
+            // Check if any dimension exceeds the maximum allowed
+            // For radius, we check the diameter (2*radius)
+            if (height > MAX_DIMENSION || (radius * 2) > MAX_DIMENSION) {
+                alert(`Maximum dimension allowed is ${MAX_DIMENSION} units. Please reduce the size of your shape.`);
+                return false;
+            }
+            
             const customShape = {
                 type: 'cone',
                 height: height,
@@ -996,6 +1031,12 @@ export function parseAndGenerateShape(description) {
                 radius = allNumbers && allNumbers.length > 0 ? parseInt(allNumbers[0]) : 2;
             }
             
+            // Check if diameter exceeds the maximum allowed
+            if ((radius * 2) > MAX_DIMENSION) {
+                alert(`Maximum dimension allowed is ${MAX_DIMENSION} units. Please reduce the size of your shape.`);
+                return false;
+            }
+            
             const customShape = {
                 type: 'sphere',
                 radius: radius,
@@ -1010,37 +1051,56 @@ export function parseAndGenerateShape(description) {
             // Attempt to infer shape from numbers available
             if (allNumbers && allNumbers.length === 1) {
                 // One number = probably a sphere or cube
+                const size = parseInt(allNumbers[0]);
+                // Check dimension limit
                 if (description.match(/round|circle/i)) {
+                    if ((size * 2) > MAX_DIMENSION) {
+                        alert(`Maximum dimension allowed is ${MAX_DIMENSION} units. Please reduce the size of your shape.`);
+                        return false;
+                    }
                     const customShape = {
                         type: 'sphere',
-                        radius: parseInt(allNumbers[0]),
+                        radius: size,
                         widthSegments: 32,
                         heightSegments: 16
                     };
                     createShape(customShape);
                 } else {
+                    if (size > MAX_DIMENSION) {
+                        alert(`Maximum dimension allowed is ${MAX_DIMENSION} units. Please reduce the size of your shape.`);
+                        return false;
+                    }
                     const customShape = {
                         type: 'cube',
-                        size: parseInt(allNumbers[0])
+                        size: size
                     };
                     createShape(customShape);
                 }
                 return true;
             } else if (allNumbers && allNumbers.length === 2) {
                 // Two numbers = height and radius, could be cylinder or cone
+                const height = parseInt(allNumbers[0]);
+                const radius = parseInt(allNumbers[1]);
+                
+                // Check dimensions against maximum allowed
+                if (height > MAX_DIMENSION || (radius * 2) > MAX_DIMENSION) {
+                    alert(`Maximum dimension allowed is ${MAX_DIMENSION} units. Please reduce the size of your shape.`);
+                    return false;
+                }
+                
                 if (description.match(/point|tip|apex/i)) {
                     const customShape = {
                         type: 'cone',
-                        height: parseInt(allNumbers[0]),
-                        radius: parseInt(allNumbers[1]),
+                        height: height,
+                        radius: radius,
                         radiusSegments: 32
                     };
                     createShape(customShape);
                 } else {
                     const customShape = {
                         type: 'cylinder',
-                        height: parseInt(allNumbers[0]),
-                        radius: parseInt(allNumbers[1]),
+                        height: height,
+                        radius: radius,
                         radiusSegments: 32
                     };
                     createShape(customShape);
@@ -1048,11 +1108,21 @@ export function parseAndGenerateShape(description) {
                 return true;
             } else if (allNumbers && allNumbers.length === 3) {
                 // Three numbers = probably a rectangular prism
+                const height = parseInt(allNumbers[0]);
+                const width = parseInt(allNumbers[1]);
+                const length = parseInt(allNumbers[2]);
+                
+                // Check dimensions against maximum allowed
+                if (height > MAX_DIMENSION || width > MAX_DIMENSION || length > MAX_DIMENSION) {
+                    alert(`Maximum dimension allowed is ${MAX_DIMENSION} units. Please reduce the size of your shape.`);
+                    return false;
+                }
+                
                 const customShape = {
                     type: 'rectangularPrism',
-                    height: parseInt(allNumbers[0]),
-                    width: parseInt(allNumbers[1]),
-                    length: parseInt(allNumbers[2])
+                    height: height,
+                    width: width,
+                    length: length
                 };
                 createShape(customShape);
                 return true;
