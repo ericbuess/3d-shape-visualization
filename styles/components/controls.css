@@ -13,9 +13,10 @@
     min-width: 0;
     width: 100%;
     background-color: #fff;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 14px;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(75, 108, 183, 0.1);
 }
 
 /* Shape Selection */
@@ -25,8 +26,8 @@
 
 .shape-selection h3, .view-controls h3, .cross-section-controls h3, .shape-details h3 {
     margin-bottom: 8px;
-    color: #2c3e50;
-    border-bottom: 2px solid #3498db;
+    color: #182848;
+    border-bottom: 2px solid #4b6cb7;
     padding-bottom: 3px;
     font-size: 16px;
 }
@@ -149,7 +150,7 @@
     font-size: 12px;
     text-align: center;
     line-height: 1.2;
-    color: #333;
+    color: #333; /* Ensure text is visible */
 }
 
 .shape-controls-container {
@@ -255,14 +256,14 @@ input[type="range"] {
     height: 8px;
     border-radius: 4px;
     -webkit-appearance: none;
-    background: linear-gradient(to right, #3498db, #2ecc71);
+    background: linear-gradient(to right, #4b6cb7, #3a5aa0);
     touch-action: none; /* Prevents default touch actions on sliders */
 }
 
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    height: 24px;
-    width: 24px;
+    height: 24px; /* Larger for better touch target */
+    width: 24px; /* Larger for better touch target */
     border-radius: 50%;
     background: #fff;
     border: 2px solid #3498db;
@@ -313,18 +314,21 @@ input[type="range"]::-ms-thumb {
 }
 
 .view-buttons button {
-    background-color: #3498db;
+    background-color: #4b6cb7;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 8px 12px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
     font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .view-buttons button:hover {
-    background-color: #2980b9;
+    background-color: #3a5aa0;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .camera-adjustments {
@@ -397,7 +401,7 @@ input[type="range"]::-ms-thumb {
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
-    color: #333;
+    color: #333; /* Ensure text is visible */
 }
 
 .plane-btn:hover {
@@ -408,124 +412,6 @@ input[type="range"]::-ms-thumb {
     background-color: #3498db;
     color: white;
     border-color: #2980b9;
-}
-
-/* Mobile Controls */
-.mobile-control-icons {
-    display: none;
-    position: fixed;
-    bottom: 15px;
-    right: 15px;
-    z-index: 1000;
-}
-
-.control-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: #2196f3;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    cursor: pointer;
-    font-size: 24px;
-    transition: all 0.3s;
-}
-
-.control-icon:hover, .control-icon.active {
-    background-color: #0d47a1;
-    transform: scale(1.1);
-}
-
-#shape-icon::after {
-    content: "⬠";
-}
-
-#view-icon::after {
-    content: "👁";
-}
-
-#cross-section-icon::after {
-    content: "✂";
-}
-
-#info-icon::after {
-    content: "ℹ";
-}
-
-.mobile-panel {
-    position: fixed;
-    bottom: 75px;
-    right: 75px;
-    width: 280px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.2);
-    z-index: 999;
-    padding: 15px;
-    display: none;
-    max-height: 80vh;
-    overflow-y: auto;
-    touch-action: pan-y; /* Improves touch scrolling */
-}
-
-.mobile-panel.active {
-    display: block;
-    animation: slideIn 0.3s ease-in-out;
-}
-
-@keyframes slideIn {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.mobile-panel-title {
-    font-weight: bold;
-    margin-bottom: 10px;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 5px;
-}
-
-.mobile-panel .shape-buttons,
-.mobile-panel .view-buttons {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.mobile-panel .shape-btn,
-.mobile-panel .view-buttons button {
-    height: auto;
-    padding: 8px;
-}
-
-.mobile-panel .shape-icon {
-    width: 30px;
-    height: 30px;
-}
-
-.mobile-panel .slider-container,
-.mobile-panel .camera-adjustments {
-    width: 100%;
-}
-
-.close-panel {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    color: #777;
-}
-
-.close-panel:hover {
-    color: #333;
 }
 
 /* Responsive adjustments */
@@ -554,5 +440,12 @@ input[type="range"]::-ms-thumb {
     
     .adjustment-control label {
         width: 100px;
+    }
+}
+
+@media (max-width: 600px) {
+    #drag-mode-toggle {
+        font-size: 10px;
+        padding: 5px 8px;
     }
 }

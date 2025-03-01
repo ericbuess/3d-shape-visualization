@@ -6,13 +6,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <title>3D Shape Visualizer</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles/main.css">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="alternate icon" type="image/png" href="cube.png">
     <!-- Load Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- Add a meta description for better SEO -->
     <meta name="description" content="Interactive 3D geometry visualization tool for educational purposes. Explore geometric shapes with volume calculations, surface area formulas, cross-sections, and 2D projections.">
+    <!-- Keep the reference to script.js for backward compatibility -->
+    <script src="js/main.js" type="module"></script>
 </head>
 <body>
     <div class="container">
@@ -232,8 +234,8 @@
             <div class="legend">
                 <h2>Orthographic Drawing Reference</h2>
                 <div class="example-images">
-                    <img src="example1.png" alt="Example 1" class="example-image" onclick="window.showFullScreenImage('example1.png')">
-                    <img src="example2.png" alt="Example 2" class="example-image" onclick="window.showFullScreenImage('example2.png')">
+                    <img src="assets/images/example1.png" alt="Example 1" class="example-image" onclick="window.showFullScreenImage('assets/images/example1.png')">
+                    <img src="assets/images/example2.png" alt="Example 2" class="example-image" onclick="window.showFullScreenImage('assets/images/example2.png')">
                 </div>
                 <div id="fullscreen-image-overlay" class="fullscreen-overlay hidden">
                     <div class="close-overlay" onclick="window.hideFullScreenImage()">&times;</div>
@@ -801,36 +803,8 @@
     };
     </script>
 
-    <!-- Fullscreen image functions -->
-    <script>
-        // Define these functions in the global scope
-        window.showFullScreenImage = function(imageSrc) {
-            const overlay = document.getElementById('fullscreen-image-overlay');
-            const image = document.getElementById('fullscreen-image');
-            image.src = imageSrc;
-            overlay.classList.remove('hidden');
-            overlay.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
-        };
-        
-        window.hideFullScreenImage = function() {
-            const overlay = document.getElementById('fullscreen-image-overlay');
-            overlay.classList.add('hidden');
-            overlay.style.display = 'none';
-            document.body.style.overflow = ''; // Re-enable scrolling
-        };
-        
-        // Ensure overlay is hidden on page load but don't interfere with later click events
-        document.addEventListener('DOMContentLoaded', function() {
-            const overlay = document.getElementById('fullscreen-image-overlay');
-            if (overlay) {
-                overlay.classList.add('hidden');
-            }
-        });
-    </script>
-    
-    <!-- Main application script -->
-    <script src="script.js"></script>
+    <!-- Fullscreen image functions are defined in js/utils/ui.js and made available globally 
+         Main application script is loaded through script.js for backward compatibility -->
     
     <!-- Additional script to ensure mobile panels are hidden on load -->
     <script>
@@ -847,6 +821,13 @@
       if (infoPanel) {
         infoPanel.style.cssText = "display: none !important";
         infoPanel.classList.remove("active");
+      }
+      
+      // Initialize fullscreen image overlay properly
+      const overlay = document.getElementById('fullscreen-image-overlay');
+      if (overlay) {
+          overlay.classList.add('hidden');
+          overlay.style.display = 'none';
       }
       
       // Prioritize this by executing immediately too

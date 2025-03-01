@@ -1,196 +1,91 @@
-/**
- * Main entry point for the 3D Shape Visualizer application
- * Initializes the application and orchestrates modules
- */
-import { CONFIG, SHAPE_DEFINITIONS } from './config.js';
-import { SceneManager } from './components/scene.js';
-import { EventBus } from './utils/eventBus.js';
-import { UIController } from './components/controls.js';
-import { ShapeFactory } from './components/shapeFactory.js';
-import { CrossSectionManager } from './components/crossSection.js';
-import { ProjectionManager } from './components/projections.js';
+// Main application entry point
 
-// Console welcome message
-console.log('3D Shape Visualizer - Starting application...');
+// Import core components
+import { init, animate, onWindowResize } from './components/scene.js';
+import { setupEventListeners, setIsometricView } from './components/controls.js';
+import { setupTabEvents, setActiveButton, setActiveViewButton, showFullScreenImage, hideFullScreenImage } from './utils/ui.js';
+import { loadShape } from './components/shapeFactory.js';
 
-class Application {
-    constructor() {
-        // Initialize the event bus for inter-component communication
-        this.eventBus = new EventBus();
-        
-        // Global state
-        this.state = {
-            currentShape: null,
-            transitionValue: CONFIG.TRANSITION.defaultValue,
-            crossSectionEnabled: false,
-            crossSectionPlane: 'horizontal',
-            crossSectionPosition: 0.5
-        };
-        
-        // Initialize components
-        this.sceneManager = new SceneManager(this.eventBus);
-        this.uiController = new UIController(this.eventBus, this.state);
-        this.shapeFactory = new ShapeFactory(this.eventBus);
-        this.crossSectionManager = new CrossSectionManager(this.eventBus, this.state);
-        this.projectionManager = new ProjectionManager(this.eventBus, this.state);
-        
-        // Set up event listeners
-        this.setupEventListeners();
-    }
-    
-    /**
-     * Set up application-level event listeners
-     */
-    setupEventListeners() {
-        // Listen for shape change events
-        this.eventBus.subscribe('shape:change', (shapeId) => {
-            this.loadShape(shapeId);
-        });
-        
-        // Listen for transition events
-        this.eventBus.subscribe('transition:update', (value) => {
-            this.state.transitionValue = value;
-            this.updateTransition();
-        });
-        
-        // Listen for cross section events
-        this.eventBus.subscribe('crossSection:toggle', (enabled) => {
-            this.state.crossSectionEnabled = enabled;
-            if (enabled) {
-                this.crossSectionManager.createCrossSection();
-            } else {
-                this.crossSectionManager.removeCrossSection();
-            }
-        });
-        
-        this.eventBus.subscribe('crossSection:updatePlane', (plane) => {
-            this.state.crossSectionPlane = plane;
-            if (this.state.crossSectionEnabled) {
-                this.crossSectionManager.updateCrossSection();
-            }
-        });
-        
-        this.eventBus.subscribe('crossSection:updatePosition', (position) => {
-            this.state.crossSectionPosition = position;
-            if (this.state.crossSectionEnabled) {
-                this.crossSectionManager.updateCrossSection();
-            }
-        });
-        
-        // Listen for window resize events
-        window.addEventListener('resize', () => this.handleResize());
-    }
-    
-    /**
-     * Initialize the application
-     */
-    async init() {
-        console.log('Initializing application...');
-        
-        try {
-            // Initialize the scene
-            await this.sceneManager.init();
-            
-            // Initialize UI controls
-            await this.uiController.init();
-            
-            // Load the default shape
-            this.loadShape(CONFIG.DEFAULT_SHAPE);
-            
-            // Start animation loop
-            this.animate();
-            
-            console.log('Application initialized successfully');
-        } catch (error) {
-            console.error('Error initializing application:', error);
-            alert('An error occurred while initializing the application. Please check the console for details.');
-        }
-    }
-    
-    /**
-     * Load a shape
-     * @param {string} shapeId - ID of the shape to load
-     */
-    loadShape(shapeId) {
-        console.log(`Loading shape: ${shapeId}`);
-        
-        try {
-            const shapeDef = SHAPE_DEFINITIONS[shapeId];
-            if (!shapeDef) {
-                console.error(`Shape definition not found for ID: ${shapeId}`);
-                return;
-            }
-            
-            // Clear existing shape
-            if (this.state.currentShape) {
-                this.sceneManager.clearShape(this.state.currentShape);
-            }
-            
-            // Create new shape
-            this.state.currentShape = this.shapeFactory.createShape(shapeDef);
-            
-            // Add to scene
-            this.sceneManager.addShapeToScene(this.state.currentShape);
-            
-            // Update projections
-            this.projectionManager.updateProjections(this.state.currentShape);
-            
-            // Update transition
-            this.updateTransition();
-            
-            // Update cross section if enabled
-            if (this.state.crossSectionEnabled) {
-                this.crossSectionManager.updateCrossSection();
-            }
-            
-            // Notify UI about shape change
-            this.eventBus.publish('shape:loaded', this.state.currentShape);
-            
-        } catch (error) {
-            console.error('Error loading shape:', error);
-        }
-    }
-    
-    /**
-     * Update the transition between 2D and 3D views
-     */
-    updateTransition() {
-        if (!this.state.currentShape) return;
-        
-        // Update the shape visuals based on transition value
-        this.projectionManager.updateTransition(this.state.transitionValue);
-        
-        // Update cross section if enabled
-        if (this.state.crossSectionEnabled) {
-            this.crossSectionManager.updateCrossSection();
-        }
-    }
-    
-    /**
-     * Handle window resize event
-     */
-    handleResize() {
-        this.sceneManager.resize();
-        this.projectionManager.resize();
-    }
-    
-    /**
-     * Animation loop
-     */
-    animate() {
-        requestAnimationFrame(() => this.animate());
-        
-        // Update controls
-        this.sceneManager.updateControls();
-        
-        // Render scenes
-        this.sceneManager.render();
-        this.projectionManager.render();
-    }
+// Make fullscreen image functions global
+window.showFullScreenImage = showFullScreenImage;
+window.hideFullScreenImage = hideFullScreenImage;
+
+// Debug logging
+console.log("Script loading...");
+
+// Make sure THREE is defined
+if (typeof THREE === 'undefined') {
+    console.error("THREE is not defined. Please check if the THREE.js library is loaded correctly.");
+    alert("Failed to load THREE.js library. Please check your internet connection and try again.");
+    throw new Error("THREE is not defined");
 }
 
-// Initialize the application when DOM is ready
+// Start animation loop first, to ensure it's running before we initialize components
+console.log("Starting animation loop...");
+animate();
+
+// Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    const app = new Application();
-    app.init();
+    console.log("DOM fully loaded, initializing application...");
+    try {
+        // Initialize main components
+        init();
+        setupEventListeners();
+        
+        // Hide shape details by default - only show after a shape is loaded
+        const shapeDetails = document.getElementById('shape-details');
+        if (shapeDetails) {
+            shapeDetails.style.display = 'none';
+        }
+        
+        // Hide mobile shape details panel by default
+        const mobileShapeInfo = document.getElementById('info-panel');
+        if (mobileShapeInfo) {
+            mobileShapeInfo.style.display = 'none';
+        }
+        
+        // Since orthographic views might not be ready yet when we load the first shape,
+        // we'll initialize the application but delay loading the first shape
+        setTimeout(() => {
+            console.log("Loading initial shape with delay to ensure views are ready...");
+            
+            // Start with triangular prism
+            loadShape('triangularPrism1');
+            setActiveButton('triangularPrism1-btn');
+            
+            // Set initial view to isometric
+            setIsometricView();
+            setActiveViewButton('isometric-view-btn');
+            
+            // Force a known global variable for transition value
+            window.transitionValue = 1;
+            document.getElementById('transition-slider').value = 100;
+            
+            // Mobile slider may not exist yet
+            const mobileSlider = document.getElementById('mobile-transition-slider');
+            if (mobileSlider) mobileSlider.value = 100;
+            
+            console.log("Setting up initial rendering sequence...");
+            
+            // Ensure tabs are set up properly
+            setupTabEvents();
+            
+            // Select the metrics tab by default
+            const metricsTab = document.getElementById('metrics-tab');
+            if (metricsTab) metricsTab.click();
+            
+            // Select mobile metrics tab if it exists
+            const mobileMetricsTab = document.getElementById('mobile-metrics-tab');
+            if (mobileMetricsTab) mobileMetricsTab.click();
+            
+            // Sequence the initialization for more reliable rendering
+            // First resize the window to make sure dimensions are correct
+            onWindowResize();
+            
+            console.log("Initial shape loaded successfully");
+        }, 500); // Extra delay to ensure orthographic views are initialized
+    } catch (error) {
+        console.error("Error initializing application:", error);
+        alert("An error occurred while initializing the application. Please check the console for details.");
+    }
 });

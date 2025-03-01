@@ -28,7 +28,7 @@
 }
 
 .tab-btn {
-    padding: 12px 5px;
+    padding: 12px 5px; /* Increased vertical padding for better touch targets */
     min-width: 70px;
     background-color: transparent;
     color: #333;
@@ -40,10 +40,10 @@
     transition: all 0.2s;
     margin-bottom: -2px;
     white-space: nowrap;
-    font-size: 14px;
+    font-size: 14px; /* Slightly larger text for readability */
     flex: 1;
-    -webkit-tap-highlight-color: rgba(52, 152, 219, 0.2);
-    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(52, 152, 219, 0.2); /* Gives feedback on tap */
+    touch-action: manipulation; /* Better touch behavior */
 }
 
 .tab-btn:hover {
@@ -52,14 +52,15 @@
 }
 
 .tab-btn:active {
-    background-color: #e3f2fd;
+    background-color: #e3f2fd; /* Visual feedback when pressed */
 }
 
+/* Tab button is active only when its corresponding content is visible */
 .tab-btn.active {
-    border-bottom: 3px solid #3498db;
+    border-bottom: 3px solid #3498db; /* Thicker border for better visibility */
     color: #3498db;
-    font-weight: 700;
-    background-color: #f0f8ff;
+    font-weight: 700; /* Bolder text for active tab */
+    background-color: #f0f8ff; /* Light background for active tab */
 }
 
 .tab-content {
@@ -110,6 +111,7 @@
     border-radius: 4px;
 }
 
+/* Enhanced educational content */
 .formula-explanation {
     font-size: 14px;
     margin: 5px 0 15px;
@@ -165,7 +167,35 @@
     display: block;
 }
 
-/* SVG text visibility */
+/* Original net-image styles */
+.net-image {
+    max-width: 100%;
+    max-height: 180px;
+}
+
+/* Original net-sequence-container styles */
+.net-sequence-container {
+    width: 100% !important;
+    margin: 0 auto;
+    text-align: center;
+    display: block;
+}
+
+/* Original net-image-container styles */
+.net-image-container {
+    width: 100% !important;
+    max-width: none;
+    height: 220px;
+    margin: 10px auto;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    overflow: visible;
+}
+
+/* Ensure SVG text is visible */
 svg text {
     fill: #000000;
     stroke: none;
@@ -178,12 +208,32 @@ svg text {
     margin: 15px auto;
     padding: 0 10px;
     max-width: 100%;
-    width: 100%;
+    width: 100%; /* Full width */
     overflow-wrap: break-word;
     word-wrap: break-word;
     box-sizing: border-box;
 }
 
+.net-explanation {
+    width: 100%;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    font-size: 14px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    margin-top: 15px;
+    box-sizing: border-box;
+    max-height: none;
+    overflow-y: visible;
+    float: none;
+    clear: both;
+    display: block;
+    line-height: 1.4;
+}
+
+/* Original net-explanation styles */
 .net-explanation {
     width: 100%;
     max-width: 100%;
@@ -226,6 +276,28 @@ svg text {
     border-top: 1px dashed #ddd;
 }
 
+/* Improved net diagrams */
+.net-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.net-diagram {
+    width: 100%;
+    height: 200px;
+    margin-bottom: 15px;
+}
+
+.net-instruction {
+    font-style: italic;
+    color: #555;
+    text-align: center;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
 /* Properties/Topology */
 #shape-topology {
     padding: 10px;
@@ -254,6 +326,7 @@ svg text {
     background-color: #f9f9f9;
 }
 
+/* Improved property display */
 .property-item {
     margin-bottom: 12px;
     padding-bottom: 12px;
