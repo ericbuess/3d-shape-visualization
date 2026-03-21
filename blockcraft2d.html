@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Craft 2D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #000;
+            font-family: 'Courier New', monospace;
+            user-select: none;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* HUD */
+        #hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 16px;
+            z-index: 10;
+        }
+
+        #hud .title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-shadow: 2px 2px #000;
+            letter-spacing: 2px;
+        }
+
+        #hud .stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        #hud .stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Inventory Toggle */
+        #inventoryBtn {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            padding: 6px 18px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 11;
+        }
+        #inventoryBtn:hover { background: rgba(255,215,0,0.2); }
+
+        /* Full Inventory */
+        #inventory {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(20, 20, 20, 0.95);
+            border: 3px solid #888;
+            border-radius: 8px;
+            padding: 16px;
+            z-index: 60;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 520px;
+        }
+        #inventory.open { display: block; }
+        #inventory h2 {
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 6px;
+            font-family: 'Courier New', monospace;
+        }
+        #inventory .category {
+            color: #aaa;
+            font-size: 13px;
+            margin: 10px 0 4px 4px;
+            font-family: 'Courier New', monospace;
+        }
+        #inventory .inv-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .inv-slot {
+            width: 52px;
+            height: 52px;
+            border: 2px solid #555;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 4px;
+            position: relative;
+        }
+        .inv-slot:hover { border-color: #FFD700; }
+        .inv-slot.active { border-color: #4CAF50; box-shadow: 0 0 8px rgba(76,175,80,0.5); }
+        .inv-slot .block-preview {
+            width: 34px;
+            height: 34px;
+            border-radius: 2px;
+        }
+        .inv-slot .inv-label {
+            font-size: 8px;
+            color: #ccc;
+            margin-top: 1px;
+            text-align: center;
+            max-width: 50px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        /* Hotbar */
+        #hotbar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+            padding: 6px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #555;
+            border-radius: 4px;
+            z-index: 10;
+        }
+
+        .hotbar-slot {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .hotbar-slot.selected {
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .hotbar-slot .block-preview {
+            width: 36px;
+            height: 36px;
+            border-radius: 2px;
+        }
+
+        .hotbar-slot .key-hint {
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            font-size: 10px;
+            color: #ccc;
+        }
+
+        /* Math overlay */
+        #mathOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        #mathOverlay.active {
+            display: flex;
+        }
+
+        #mathOverlay .math-header {
+            font-size: 28px;
+            color: #FFD700;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px #000;
+        }
+
+        #mathOverlay .math-subheader {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+
+        #mathOverlay .math-timer {
+            font-size: 18px;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+
+        #mathOverlay .math-score {
+            font-size: 16px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        #mathOverlay .math-problem {
+            font-size: 64px;
+            margin-bottom: 30px;
+            color: #fff;
+            text-shadow: 3px 3px #000;
+        }
+
+        #mathOverlay .math-input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #mathOverlay input {
+            font-size: 36px;
+            width: 180px;
+            padding: 10px 16px;
+            text-align: center;
+            border: 3px solid #4CAF50;
+            border-radius: 8px;
+            background: #222;
+            color: white;
+            font-family: 'Courier New', monospace;
+            outline: none;
+        }
+
+        #mathOverlay input:focus {
+            border-color: #FFD700;
+        }
+
+        #mathOverlay button {
+            font-size: 24px;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+
+        #mathOverlay button:hover {
+            background: #45a049;
+        }
+
+        #mathOverlay .feedback {
+            margin-top: 20px;
+            font-size: 28px;
+            min-height: 40px;
+        }
+
+        /* Countdown warning */
+        #mathWarning {
+            display: none;
+            position: fixed;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 18px;
+            z-index: 50;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Crosshair */
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        #crosshair::before, #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        #crosshair::before {
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+
+        #crosshair::after {
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            transform: translateX(-50%);
+        }
+
+        /* Instructions */
+        #instructions {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            text-align: center;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div id="hud">
+        <div class="title">BLOCK CRAFT 2D</div>
+        <div class="stats">
+            <div class="stat">Score: <span id="score">0</span></div>
+            <div class="stat">Math Timer: <span id="nextMath">5:00</span></div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    <div id="crosshair"></div>
+
+    <div id="hotbar"></div>
+    <button id="inventoryBtn" onclick="toggleInventory()">Inventory (E)</button>
+    <div id="inventory"></div>
+    <div id="instructions">WASD/Arrows: Move &amp; Jump | Left Click: Break | Right Click: Place | 1-9: Hotbar | E: Inventory | Scroll: Change Block</div>
+
+    <div id="mathWarning">Math Challenge starting soon!</div>
+
+    <div id="mathOverlay">
+        <div class="math-header">MATH CHALLENGE!</div>
+        <div class="math-subheader">Solve easy addition &amp; subtraction problems to earn bonus points!</div>
+        <div class="math-timer">Time left: <span id="mathTimeLeft">5:00</span></div>
+        <div class="math-score">Problems solved: <span id="mathSolved">0</span> | Streak: <span id="mathStreak">0</span></div>
+        <div class="math-problem" id="mathProblem">3 + 5 = ?</div>
+        <div class="math-input-area">
+            <input type="number" id="mathAnswer" placeholder="?" autocomplete="off">
+            <button id="mathSubmit">GO</button>
+        </div>
+        <div class="feedback" id="mathFeedback"></div>
+    </div>
+
+    <script>
+        // ============================================================
+        // BLOCK CRAFT 2D — A 2D Minecraft-style game with math breaks
+        // ============================================================
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- Constants ---
+        const TILE = 32;
+        const GRAVITY = 0.5;
+        const JUMP_FORCE = -10;
+        const MOVE_SPEED = 4;
+        const MATH_INTERVAL = 5 * 60 * 1000;   // 5 minutes
+        const MATH_DURATION = 5 * 60 * 1000;    // 5 minutes
+
+        // --- Block Types (massive inventory!) ---
+        const BLOCK_TYPES = [
+            // === Natural (category 0-11) ===
+            { name: 'Grass',      top: '#5a9e3e', body: '#8B6F47', outline: '#3d6e2a', cat: 'Natural' },
+            { name: 'Dirt',       top: '#8B6F47', body: '#8B6F47', outline: '#6b4f2f', cat: 'Natural' },
+            { name: 'Stone',      top: '#888',    body: '#999',    outline: '#666',    cat: 'Natural' },
+            { name: 'Wood',       top: '#9e7c4a', body: '#b5905a', outline: '#7a5c34', cat: 'Natural' },
+            { name: 'Leaves',     top: '#3a7a2a', body: '#4a9a3a', outline: '#2a5a1a', cat: 'Natural' },
+            { name: 'Sand',       top: '#e8d68a', body: '#dcc87a', outline: '#c4a85a', cat: 'Natural' },
+            { name: 'Gravel',     top: '#8a8078', body: '#9a9088', outline: '#6a6058', cat: 'Natural' },
+            { name: 'Snow',       top: '#f0f0ff', body: '#e8e8f0', outline: '#c8c8d8', cat: 'Natural' },
+            { name: 'Ice',        top: '#a0d8f0', body: '#b0e8ff', outline: '#80b8d0', cat: 'Natural' },
+            { name: 'Clay',       top: '#a0a0b0', body: '#b0b0c0', outline: '#808090', cat: 'Natural' },
+            { name: 'Moss',       top: '#4a7a3a', body: '#5a8a4a', outline: '#3a6a2a', cat: 'Natural' },
+            { name: 'Cactus',     top: '#2a7a2a', body: '#3a8a3a', outline: '#1a6a1a', cat: 'Natural' },
+            // === Ores & Precious (12-20) ===
+            { name: 'Coal Ore',   top: '#444',    body: '#333',    outline: '#222',    cat: 'Ores' },
+            { name: 'Iron Ore',   top: '#b08060', body: '#c09070', outline: '#906040', cat: 'Ores' },
+            { name: 'Gold Ore',   top: '#daa520', body: '#c89418', outline: '#a07010', cat: 'Ores' },
+            { name: 'Gold Block', top: '#FFD700', body: '#f0c800', outline: '#c8a000', cat: 'Ores' },
+            { name: 'Diamond Ore',top: '#4adae8', body: '#3ac8d8', outline: '#28a8b8', cat: 'Ores' },
+            { name: 'Diamond',    top: '#5af0ff', body: '#40e0f0', outline: '#20c0d0', cat: 'Ores' },
+            { name: 'Emerald',    top: '#2ecc71', body: '#27ae60', outline: '#1a8a48', cat: 'Ores' },
+            { name: 'Ruby',       top: '#e74c3c', body: '#c0392b', outline: '#a02818', cat: 'Ores' },
+            { name: 'Amethyst',   top: '#9b59b6', body: '#8e44ad', outline: '#6a2a88', cat: 'Ores' },
+            // === Building (21-31) ===
+            { name: 'Brick',      top: '#9e4a3a', body: '#b55a4a', outline: '#7a3a2a', cat: 'Building' },
+            { name: 'Stone Brick',top: '#808080', body: '#909090', outline: '#606060', cat: 'Building' },
+            { name: 'Cobblestone',top: '#707070', body: '#808080', outline: '#505050', cat: 'Building' },
+            { name: 'Planks',     top: '#c8a060', body: '#d0a868', outline: '#a08040', cat: 'Building' },
+            { name: 'Glass',      top: '#d0e8ff', body: '#c0d8f0', outline: '#90b8e0', cat: 'Building' },
+            { name: 'Marble',     top: '#f0f0f0', body: '#e8e8e8', outline: '#c0c0c0', cat: 'Building' },
+            { name: 'Concrete',   top: '#a0a0a0', body: '#b0b0b0', outline: '#808080', cat: 'Building' },
+            { name: 'Obsidian',   top: '#1a0a2e', body: '#2a1a3e', outline: '#100820', cat: 'Building' },
+            { name: 'Sandstone',  top: '#e0c878', body: '#d8c070', outline: '#c0a050', cat: 'Building' },
+            { name: 'Quartz',     top: '#f8f0e8', body: '#f0e8e0', outline: '#d0c8c0', cat: 'Building' },
+            { name: 'Nether Brick',top:'#3a1a1a', body: '#4a2a2a', outline: '#2a0a0a', cat: 'Building' },
+            // === Colorful (32-43) ===
+            { name: 'Red',        top: '#e74c3c', body: '#c0392b', outline: '#a02818', cat: 'Colors' },
+            { name: 'Orange',     top: '#e67e22', body: '#d35400', outline: '#b04000', cat: 'Colors' },
+            { name: 'Yellow',     top: '#f1c40f', body: '#d4ac0d', outline: '#b08c00', cat: 'Colors' },
+            { name: 'Lime',       top: '#2ecc71', body: '#27ae60', outline: '#1a8a48', cat: 'Colors' },
+            { name: 'Green',      top: '#1a8a30', body: '#157a28', outline: '#106020', cat: 'Colors' },
+            { name: 'Cyan',       top: '#1abc9c', body: '#16a085', outline: '#108068', cat: 'Colors' },
+            { name: 'Blue',       top: '#2980b9', body: '#2070a0', outline: '#185888', cat: 'Colors' },
+            { name: 'Purple',     top: '#8e44ad', body: '#7a3a98', outline: '#5a2a78', cat: 'Colors' },
+            { name: 'Pink',       top: '#e888b0', body: '#d070a0', outline: '#b05888', cat: 'Colors' },
+            { name: 'White',      top: '#f0f0f0', body: '#e8e8e8', outline: '#c8c8c8', cat: 'Colors' },
+            { name: 'Gray',       top: '#888888', body: '#777777', outline: '#555555', cat: 'Colors' },
+            { name: 'Black',      top: '#2a2a2a', body: '#1a1a1a', outline: '#0a0a0a', cat: 'Colors' },
+            // === Liquids (44-46) ===
+            { name: 'Water',      top: '#3a6ae8', body: '#4a7af8', outline: '#2a5ad8', cat: 'Liquids' },
+            { name: 'Lava',       top: '#ff4400', body: '#e83a00', outline: '#c03000', cat: 'Liquids' },
+            { name: 'Slime',      top: '#88ff44', body: '#70e038', outline: '#50c020', cat: 'Liquids' },
+            // === Special & Fun (47-58) ===
+            { name: 'TNT',        top: '#ff2200', body: '#cc1a00', outline: '#881100', cat: 'Special' },
+            { name: 'Bookshelf',  top: '#8a6040', body: '#7a5030', outline: '#5a3820', cat: 'Special' },
+            { name: 'Cake',       top: '#f8e8d0', body: '#e8d0b0', outline: '#c8b090', cat: 'Special' },
+            { name: 'Melon',      top: '#4a8a2a', body: '#88c848', outline: '#3a6a1a', cat: 'Special' },
+            { name: 'Pumpkin',    top: '#e88830', body: '#d07020', outline: '#b05810', cat: 'Special' },
+            { name: 'Glowstone',  top: '#f0d860', body: '#e0c850', outline: '#c0a830', cat: 'Special' },
+            { name: 'Redstone',   top: '#cc0000', body: '#aa0000', outline: '#880000', cat: 'Special' },
+            { name: 'Sponge',     top: '#d8d040', body: '#c8c030', outline: '#a8a018', cat: 'Special' },
+            { name: 'Wool',       top: '#f0e8e0', body: '#e8e0d8', outline: '#c8c0b8', cat: 'Special' },
+            { name: 'Hay',        top: '#d8b830', body: '#c8a820', outline: '#a88810', cat: 'Special' },
+            { name: 'Car (Red)',  top: '#cc2020', body: '#aa1818', outline: '#881010', cat: 'Vehicles' },
+            { name: 'Car (Blue)', top: '#2050cc', body: '#1840aa', outline: '#103088', cat: 'Vehicles' },
+            // === More Fun (59-65) ===
+            { name: 'Truck',      top: '#606060', body: '#505050', outline: '#404040', cat: 'Vehicles' },
+            { name: 'Rocket',     top: '#e0e0e8', body: '#c8c8d0', outline: '#ff4400', cat: 'Vehicles' },
+            { name: 'Crown',      top: '#FFD700', body: '#e8c400', outline: '#c0a000', cat: 'Special' },
+            { name: 'Star',       top: '#FFD700', body: '#f0c000', outline: '#d0a000', cat: 'Special' },
+            { name: 'Heart',      top: '#ff4466', body: '#ee3355', outline: '#cc2244', cat: 'Special' },
+            { name: 'Music Note', top: '#9b59b6', body: '#8844aa', outline: '#663388', cat: 'Special' },
+            { name: 'Rainbow',    top: '#ff6b6b', body: '#4ecdc4', outline: '#ffe66d', cat: 'Special' },
+        ];
+
+        // --- World ---
+        const WORLD_W = 200;
+        const WORLD_H = 60;
+        const GROUND_LEVEL = 40;
+        let world = [];
+
+        // --- Camera ---
+        let cameraX = 0;
+        let cameraY = 0;
+
+        // --- Player ---
+        let player = {
+            x: WORLD_W / 2 * TILE,
+            y: 0,
+            w: TILE * 0.8,
+            h: TILE * 1.8,
+            vx: 0,
+            vy: 0,
+            onGround: false,
+            selectedBlock: 0,
+        };
+
+        // --- State ---
+        let score = 0;
+        let keys = {};
+        let mathActive = false;
+        let mathTimerStart = Date.now();
+        let mathChallengeStart = 0;
+        let mathSolved = 0;
+        let mathStreak = 0;
+        let currentAnswer = 0;
+
+        // ============================================================
+        // WORLD GENERATION
+        // ============================================================
+        function generateWorld() {
+            world = [];
+            for (let x = 0; x < WORLD_W; x++) {
+                world[x] = [];
+                // Simple terrain with hills
+                let height = GROUND_LEVEL + Math.floor(Math.sin(x * 0.1) * 3 + Math.cos(x * 0.05) * 2);
+                for (let y = 0; y < WORLD_H; y++) {
+                    if (y === height) {
+                        world[x][y] = 1; // Grass
+                    } else if (y > height && y < height + 4) {
+                        world[x][y] = 2; // Dirt
+                    } else if (y >= height + 4) {
+                        world[x][y] = 3; // Stone
+                    } else {
+                        world[x][y] = 0; // Air
+                    }
+                }
+            }
+
+            // Add trees
+            for (let x = 5; x < WORLD_W - 5; x += Math.floor(Math.random() * 8) + 6) {
+                let groundY = findGround(x);
+                if (groundY > 5) {
+                    // Trunk
+                    let trunkHeight = Math.floor(Math.random() * 3) + 4;
+                    for (let ty = 1; ty <= trunkHeight; ty++) {
+                        if (groundY - ty >= 0) world[x][groundY - ty] = 4; // Wood
+                    }
+                    // Leaves
+                    let leafTop = groundY - trunkHeight;
+                    for (let lx = -2; lx <= 2; lx++) {
+                        for (let ly = -2; ly <= 1; ly++) {
+                            let wx = x + lx;
+                            let wy = leafTop + ly;
+                            if (wx >= 0 && wx < WORLD_W && wy >= 0 && wy < WORLD_H) {
+                                if (world[wx][wy] === 0 && Math.abs(lx) + Math.abs(ly) < 4) {
+                                    world[wx][wy] = 5; // Leaves
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Scatter some coal in stone
+            for (let i = 0; i < 80; i++) {
+                let cx = Math.floor(Math.random() * WORLD_W);
+                let cy = Math.floor(Math.random() * 10) + GROUND_LEVEL + 5;
+                if (cy < WORLD_H && world[cx] && world[cx][cy] === 3) {
+                    world[cx][cy] = 9; // Coal
+                }
+            }
+
+            // Place player on surface
+            let spawnGround = findGround(Math.floor(WORLD_W / 2));
+            player.x = Math.floor(WORLD_W / 2) * TILE;
+            player.y = (spawnGround - 3) * TILE;
+        }
+
+        function findGround(x) {
+            for (let y = 0; y < WORLD_H; y++) {
+                if (world[x] && world[x][y] !== 0) return y;
+            }
+            return GROUND_LEVEL;
+        }
+
+        // ============================================================
+        // RENDERING
+        // ============================================================
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function drawBlock(screenX, screenY, blockType) {
+            let block = BLOCK_TYPES[blockType - 1];
+            if (!block) return;
+
+            // Body
+            ctx.fillStyle = block.body;
+            ctx.fillRect(screenX, screenY, TILE, TILE);
+
+            // Top layer (grass-like top)
+            ctx.fillStyle = block.top;
+            ctx.fillRect(screenX, screenY, TILE, TILE * 0.3);
+
+            // Outline
+            ctx.strokeStyle = block.outline;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(screenX, screenY, TILE, TILE);
+
+            // Texture details per block type
+            let bName = block.name;
+            if (bName === 'Stone' || bName === 'Coal Ore' || bName === 'Cobblestone') {
+                ctx.strokeStyle = block.outline;
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(screenX + 8, screenY + 10);
+                ctx.lineTo(screenX + 20, screenY + 14);
+                ctx.moveTo(screenX + 5, screenY + 22);
+                ctx.lineTo(screenX + 18, screenY + 26);
+                ctx.stroke();
+            }
+            if (bName === 'Wood') {
+                ctx.strokeStyle = block.outline;
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(screenX + 6 + i * 8, screenY);
+                    ctx.lineTo(screenX + 6 + i * 8, screenY + TILE);
+                    ctx.stroke();
+                }
+            }
+            if (bName === 'Brick' || bName === 'Nether Brick' || bName === 'Stone Brick') {
+                ctx.strokeStyle = block.outline;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(screenX, screenY + 10);
+                ctx.lineTo(screenX + TILE, screenY + 10);
+                ctx.moveTo(screenX, screenY + 20);
+                ctx.lineTo(screenX + TILE, screenY + 20);
+                ctx.moveTo(screenX + 16, screenY);
+                ctx.lineTo(screenX + 16, screenY + 10);
+                ctx.moveTo(screenX + 8, screenY + 10);
+                ctx.lineTo(screenX + 8, screenY + 20);
+                ctx.moveTo(screenX + 24, screenY + 20);
+                ctx.lineTo(screenX + 24, screenY + TILE);
+                ctx.stroke();
+            }
+            if (bName.includes('Diamond') || bName === 'Emerald' || bName === 'Ruby' || bName === 'Amethyst') {
+                // Sparkle
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.fillRect(screenX + 10, screenY + 8, 3, 3);
+                ctx.fillRect(screenX + 20, screenY + 18, 2, 2);
+                ctx.fillRect(screenX + 6, screenY + 22, 2, 2);
+            }
+            if (bName === 'Gold Block' || bName === 'Gold Ore') {
+                ctx.fillStyle = 'rgba(255,255,200,0.4)';
+                ctx.fillRect(screenX + 12, screenY + 6, 4, 4);
+                ctx.fillRect(screenX + 22, screenY + 20, 3, 3);
+            }
+            if (bName === 'Glass') {
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(screenX + 4, screenY + 4);
+                ctx.lineTo(screenX + 12, screenY + 12);
+                ctx.stroke();
+            }
+            if (bName === 'TNT') {
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px Courier New';
+                ctx.fillText('TNT', screenX + 6, screenY + 20);
+            }
+            if (bName === 'Bookshelf') {
+                ctx.fillStyle = '#c8a040';
+                for (let i = 0; i < 3; i++) {
+                    ctx.fillRect(screenX + 4 + i * 9, screenY + 6, 7, 20);
+                }
+            }
+            if (bName.includes('Car')) {
+                // Wheels
+                ctx.fillStyle = '#222';
+                ctx.beginPath();
+                ctx.arc(screenX + 8, screenY + TILE - 4, 4, 0, Math.PI * 2);
+                ctx.arc(screenX + TILE - 8, screenY + TILE - 4, 4, 0, Math.PI * 2);
+                ctx.fill();
+                // Window
+                ctx.fillStyle = 'rgba(150,200,255,0.7)';
+                ctx.fillRect(screenX + 10, screenY + 4, 12, 10);
+            }
+            if (bName === 'Truck') {
+                ctx.fillStyle = '#222';
+                ctx.beginPath();
+                ctx.arc(screenX + 6, screenY + TILE - 4, 4, 0, Math.PI * 2);
+                ctx.arc(screenX + TILE - 6, screenY + TILE - 4, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#888';
+                ctx.fillRect(screenX + 2, screenY + 4, 10, 14);
+            }
+            if (bName === 'Rocket') {
+                // Nose cone
+                ctx.fillStyle = '#ff4400';
+                ctx.beginPath();
+                ctx.moveTo(screenX + TILE / 2, screenY);
+                ctx.lineTo(screenX + TILE / 2 + 8, screenY + 10);
+                ctx.lineTo(screenX + TILE / 2 - 8, screenY + 10);
+                ctx.closePath();
+                ctx.fill();
+                // Flame
+                ctx.fillStyle = '#ff8800';
+                ctx.beginPath();
+                ctx.moveTo(screenX + TILE / 2, screenY + TILE);
+                ctx.lineTo(screenX + TILE / 2 + 5, screenY + TILE - 8);
+                ctx.lineTo(screenX + TILE / 2 - 5, screenY + TILE - 8);
+                ctx.closePath();
+                ctx.fill();
+            }
+            if (bName === 'Crown') {
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.moveTo(screenX + 4, screenY + TILE - 6);
+                ctx.lineTo(screenX + 4, screenY + 8);
+                ctx.lineTo(screenX + 10, screenY + 14);
+                ctx.lineTo(screenX + 16, screenY + 6);
+                ctx.lineTo(screenX + 22, screenY + 14);
+                ctx.lineTo(screenX + 28, screenY + 8);
+                ctx.lineTo(screenX + 28, screenY + TILE - 6);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#c0a000';
+                ctx.stroke();
+            }
+            if (bName === 'Star') {
+                ctx.fillStyle = '#FFD700';
+                ctx.font = '22px serif';
+                ctx.fillText('\u2605', screenX + 6, screenY + 24);
+            }
+            if (bName === 'Heart') {
+                ctx.fillStyle = '#ff4466';
+                ctx.font = '22px serif';
+                ctx.fillText('\u2665', screenX + 6, screenY + 24);
+            }
+            if (bName === 'Music Note') {
+                ctx.fillStyle = '#fff';
+                ctx.font = '20px serif';
+                ctx.fillText('\u266A', screenX + 8, screenY + 24);
+            }
+            if (bName === 'Rainbow') {
+                let colors = ['#ff0000','#ff8800','#ffff00','#00cc00','#0066ff','#8800ff'];
+                colors.forEach((c, i) => {
+                    ctx.fillStyle = c;
+                    ctx.fillRect(screenX, screenY + i * 5, TILE, 5);
+                });
+                ctx.strokeStyle = block.outline;
+                ctx.strokeRect(screenX, screenY, TILE, TILE);
+            }
+            if (bName === 'Lava') {
+                ctx.fillStyle = 'rgba(255,200,0,0.4)';
+                ctx.fillRect(screenX + 4, screenY + 8, 8, 6);
+                ctx.fillRect(screenX + 18, screenY + 16, 6, 8);
+            }
+            if (bName === 'Glowstone') {
+                ctx.fillStyle = 'rgba(255,255,200,0.5)';
+                ctx.beginPath();
+                ctx.arc(screenX + 16, screenY + 16, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawPlayer(screenX, screenY) {
+            // Body
+            ctx.fillStyle = '#4a8ac7';
+            ctx.fillRect(screenX + 4, screenY + player.h * 0.35, player.w - 8, player.h * 0.45);
+
+            // Head
+            ctx.fillStyle = '#e8b88a';
+            ctx.fillRect(screenX + 6, screenY, player.w - 12, player.h * 0.35);
+
+            // Eyes
+            ctx.fillStyle = '#333';
+            ctx.fillRect(screenX + 9, screenY + 8, 3, 3);
+            ctx.fillRect(screenX + player.w - 12, screenY + 8, 3, 3);
+
+            // Legs
+            ctx.fillStyle = '#555';
+            ctx.fillRect(screenX + 6, screenY + player.h * 0.8, 6, player.h * 0.2);
+            ctx.fillRect(screenX + player.w - 12, screenY + player.h * 0.8, 6, player.h * 0.2);
+        }
+
+        function drawSky() {
+            let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#1a1a4e');
+            gradient.addColorStop(0.3, '#4a7ab5');
+            gradient.addColorStop(0.7, '#87CEEB');
+            gradient.addColorStop(1, '#b0d8f0');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Sun
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(canvas.width - 100, 80, 40, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+            ctx.beginPath();
+            ctx.arc(canvas.width - 100, 80, 60, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Clouds
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            drawCloud(200 - cameraX * 0.1, 60);
+            drawCloud(600 - cameraX * 0.1, 40);
+            drawCloud(1100 - cameraX * 0.1, 70);
+        }
+
+        function drawCloud(x, y) {
+            ctx.beginPath();
+            ctx.ellipse(x, y, 40, 16, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + 30, y - 5, 30, 14, 0, 0, Math.PI * 2);
+            ctx.ellipse(x - 25, y + 2, 25, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function render() {
+            // Update camera to follow player
+            cameraX = player.x - canvas.width / 2 + player.w / 2;
+            cameraY = player.y - canvas.height / 2 + player.h / 2;
+
+            drawSky();
+
+            // Draw visible blocks
+            let startCol = Math.max(0, Math.floor(cameraX / TILE) - 1);
+            let endCol = Math.min(WORLD_W - 1, Math.ceil((cameraX + canvas.width) / TILE) + 1);
+            let startRow = Math.max(0, Math.floor(cameraY / TILE) - 1);
+            let endRow = Math.min(WORLD_H - 1, Math.ceil((cameraY + canvas.height) / TILE) + 1);
+
+            for (let x = startCol; x <= endCol; x++) {
+                for (let y = startRow; y <= endRow; y++) {
+                    if (world[x] && world[x][y] > 0) {
+                        let screenX = x * TILE - cameraX;
+                        let screenY = y * TILE - cameraY;
+                        drawBlock(screenX, screenY, world[x][y]);
+                    }
+                }
+            }
+
+            // Draw player
+            let playerScreenX = player.x - cameraX;
+            let playerScreenY = player.y - cameraY;
+            drawPlayer(playerScreenX, playerScreenY);
+
+            // Highlight hovered block
+            drawBlockHighlight();
+        }
+
+        function drawBlockHighlight() {
+            let bx = Math.floor((mouseX + cameraX) / TILE);
+            let by = Math.floor((mouseY + cameraY) / TILE);
+            if (bx >= 0 && bx < WORLD_W && by >= 0 && by < WORLD_H) {
+                let sx = bx * TILE - cameraX;
+                let sy = by * TILE - cameraY;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(sx, sy, TILE, TILE);
+            }
+        }
+
+        // ============================================================
+        // PHYSICS & COLLISION
+        // ============================================================
+        function isSolid(px, py) {
+            let bx = Math.floor(px / TILE);
+            let by = Math.floor(py / TILE);
+            if (bx < 0 || bx >= WORLD_W || by < 0 || by >= WORLD_H) return true;
+            return world[bx] && world[bx][by] > 0 && world[bx][by] !== 8; // Water is not solid
+        }
+
+        function updatePlayer() {
+            // Horizontal movement
+            if (keys['ArrowLeft'] || keys['a'] || keys['A']) player.vx = -MOVE_SPEED;
+            else if (keys['ArrowRight'] || keys['d'] || keys['D']) player.vx = MOVE_SPEED;
+            else player.vx = 0;
+
+            // Jump
+            if ((keys['ArrowUp'] || keys['w'] || keys['W'] || keys[' ']) && player.onGround) {
+                player.vy = JUMP_FORCE;
+                player.onGround = false;
+            }
+
+            // Apply gravity
+            player.vy += GRAVITY;
+            if (player.vy > 12) player.vy = 12;
+
+            // Horizontal collision
+            let newX = player.x + player.vx;
+            if (!checkCollision(newX, player.y, player.w, player.h)) {
+                player.x = newX;
+            }
+
+            // Vertical collision
+            let newY = player.y + player.vy;
+            if (!checkCollision(player.x, newY, player.w, player.h)) {
+                player.y = newY;
+                player.onGround = false;
+            } else {
+                if (player.vy > 0) player.onGround = true;
+                player.vy = 0;
+            }
+
+            // World bounds
+            player.x = Math.max(0, Math.min(player.x, (WORLD_W - 1) * TILE));
+        }
+
+        function checkCollision(x, y, w, h) {
+            // Check corners and midpoints
+            let points = [
+                [x + 2, y + 2],
+                [x + w - 2, y + 2],
+                [x + 2, y + h - 2],
+                [x + w - 2, y + h - 2],
+                [x + w / 2, y + 2],
+                [x + w / 2, y + h - 2],
+            ];
+            for (let [px, py] of points) {
+                if (isSolid(px, py)) return true;
+            }
+            return false;
+        }
+
+        // ============================================================
+        // BLOCK INTERACTION
+        // ============================================================
+        let mouseX = 0, mouseY = 0;
+
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (mathActive) return;
+
+            let bx = Math.floor((mouseX + cameraX) / TILE);
+            let by = Math.floor((mouseY + cameraY) / TILE);
+
+            if (bx < 0 || bx >= WORLD_W || by < 0 || by >= WORLD_H) return;
+
+            // Check distance from player (reach limit of 6 blocks)
+            let playerCenterX = player.x + player.w / 2;
+            let playerCenterY = player.y + player.h / 2;
+            let blockCenterX = bx * TILE + TILE / 2;
+            let blockCenterY = by * TILE + TILE / 2;
+            let dist = Math.sqrt((playerCenterX - blockCenterX) ** 2 + (playerCenterY - blockCenterY) ** 2);
+            if (dist > TILE * 6) return;
+
+            if (e.button === 0) {
+                // Left click — break block
+                if (world[bx][by] > 0) {
+                    world[bx][by] = 0;
+                    score += 1;
+                    updateScore();
+                }
+            } else if (e.button === 2) {
+                // Right click — place block
+                if (world[bx][by] === 0) {
+                    // Don't place inside the player
+                    let blockRect = { x: bx * TILE, y: by * TILE, w: TILE, h: TILE };
+                    let playerRect = { x: player.x, y: player.y, w: player.w, h: player.h };
+                    if (!rectsOverlap(blockRect, playerRect)) {
+                        world[bx][by] = player.selectedBlock + 1; // +1 since 0 = air
+                        score += 2;
+                        updateScore();
+                    }
+                }
+            }
+        });
+
+        function rectsOverlap(a, b) {
+            return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+        }
+
+        // ============================================================
+        // HOTBAR & INVENTORY
+        // ============================================================
+        // Hotbar holds 9 block type indices
+        let hotbar = [0, 1, 2, 3, 4, 5, 15, 17, 47]; // Default hotbar blocks
+        let hotbarSlot = 0; // Currently selected hotbar slot
+        let inventoryOpen = false;
+
+        function buildHotbar() {
+            let hotbarEl = document.getElementById('hotbar');
+            hotbarEl.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                let block = BLOCK_TYPES[hotbar[i]];
+                let slot = document.createElement('div');
+                slot.className = 'hotbar-slot' + (i === hotbarSlot ? ' selected' : '');
+                slot.innerHTML = `
+                    <div class="key-hint">${i + 1}</div>
+                    <div class="block-preview" style="background: linear-gradient(to bottom, ${block.top} 30%, ${block.body} 30%); border: 1px solid ${block.outline};" title="${block.name}"></div>
+                `;
+                slot.addEventListener('click', () => selectHotbarSlot(i));
+                hotbarEl.appendChild(slot);
+            }
+            player.selectedBlock = hotbar[hotbarSlot];
+        }
+
+        function selectHotbarSlot(index) {
+            hotbarSlot = index;
+            player.selectedBlock = hotbar[hotbarSlot];
+            document.querySelectorAll('.hotbar-slot').forEach((slot, i) => {
+                slot.classList.toggle('selected', i === index);
+            });
+        }
+
+        function toggleInventory() {
+            inventoryOpen = !inventoryOpen;
+            let invEl = document.getElementById('inventory');
+            invEl.classList.toggle('open', inventoryOpen);
+            if (inventoryOpen) buildInventory();
+        }
+
+        function buildInventory() {
+            let invEl = document.getElementById('inventory');
+            // Group blocks by category
+            let categories = {};
+            BLOCK_TYPES.forEach((block, i) => {
+                let cat = block.cat || 'Other';
+                if (!categories[cat]) categories[cat] = [];
+                categories[cat].push({ block, index: i });
+            });
+
+            let html = '<h2>INVENTORY</h2><p style="color:#888;font-size:12px;text-align:center;margin-bottom:10px;">Click a block to add to your hotbar (replaces current slot)</p>';
+            for (let cat in categories) {
+                html += `<div class="category">${cat}</div><div class="inv-grid">`;
+                for (let { block, index } of categories[cat]) {
+                    let isActive = hotbar[hotbarSlot] === index;
+                    html += `<div class="inv-slot${isActive ? ' active' : ''}" onclick="pickBlock(${index})" title="${block.name}">
+                        <div class="block-preview" style="background: linear-gradient(to bottom, ${block.top} 30%, ${block.body} 30%); border: 1px solid ${block.outline};"></div>
+                        <div class="inv-label">${block.name}</div>
+                    </div>`;
+                }
+                html += '</div>';
+            }
+            invEl.innerHTML = html;
+        }
+
+        function pickBlock(blockIndex) {
+            hotbar[hotbarSlot] = blockIndex;
+            player.selectedBlock = blockIndex;
+            buildHotbar();
+            buildInventory(); // Refresh active state
+        }
+
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            let num = parseInt(e.key);
+            if (num >= 1 && num <= 9 && !mathActive) {
+                selectHotbarSlot(num - 1);
+            }
+            if ((e.key === 'e' || e.key === 'E') && !mathActive) {
+                toggleInventory();
+            }
+            if (e.key === 'Escape' && inventoryOpen) {
+                inventoryOpen = false;
+                document.getElementById('inventory').classList.remove('open');
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Scroll to change hotbar slot
+        canvas.addEventListener('wheel', (e) => {
+            let dir = e.deltaY > 0 ? 1 : -1;
+            let next = (hotbarSlot + dir + 9) % 9;
+            selectHotbarSlot(next);
+        });
+
+        // ============================================================
+        // MATH CHALLENGE SYSTEM
+        // ============================================================
+        function generateMathProblem() {
+            let isAddition = Math.random() > 0.5;
+            let a, b;
+
+            if (isAddition) {
+                a = Math.floor(Math.random() * 50) + 1;
+                b = Math.floor(Math.random() * 50) + 1;
+                currentAnswer = a + b;
+                document.getElementById('mathProblem').textContent = `${a} + ${b} = ?`;
+            } else {
+                a = Math.floor(Math.random() * 50) + 10;
+                b = Math.floor(Math.random() * Math.min(a, 30)) + 1;
+                currentAnswer = a - b;
+                document.getElementById('mathProblem').textContent = `${a} - ${b} = ?`;
+            }
+        }
+
+        function startMathChallenge() {
+            mathActive = true;
+            mathSolved = 0;
+            mathStreak = 0;
+            mathChallengeStart = Date.now();
+            document.getElementById('mathOverlay').classList.add('active');
+            document.getElementById('mathWarning').style.display = 'none';
+            document.getElementById('mathSolved').textContent = '0';
+            document.getElementById('mathStreak').textContent = '0';
+            document.getElementById('mathFeedback').textContent = '';
+            generateMathProblem();
+            let input = document.getElementById('mathAnswer');
+            input.value = '';
+            input.focus();
+        }
+
+        function endMathChallenge() {
+            mathActive = false;
+            document.getElementById('mathOverlay').classList.remove('active');
+            mathTimerStart = Date.now();
+            // Bonus points for solving problems
+            score += mathSolved * 10;
+            updateScore();
+        }
+
+        function submitMathAnswer() {
+            let input = document.getElementById('mathAnswer');
+            let userAnswer = parseInt(input.value);
+            let feedback = document.getElementById('mathFeedback');
+
+            if (isNaN(userAnswer)) return;
+
+            if (userAnswer === currentAnswer) {
+                mathSolved++;
+                mathStreak++;
+                feedback.textContent = getPositiveFeedback();
+                feedback.style.color = '#4CAF50';
+                score += 5 + mathStreak;
+                updateScore();
+            } else {
+                mathStreak = 0;
+                feedback.textContent = `Nope! The answer was ${currentAnswer}`;
+                feedback.style.color = '#ff6b6b';
+            }
+
+            document.getElementById('mathSolved').textContent = mathSolved;
+            document.getElementById('mathStreak').textContent = mathStreak;
+            input.value = '';
+
+            // Next problem after brief delay
+            setTimeout(() => {
+                generateMathProblem();
+                feedback.textContent = '';
+                input.focus();
+            }, 1200);
+        }
+
+        function getPositiveFeedback() {
+            let messages = ['Correct!', 'Nice!', 'Great job!', 'Awesome!', 'Perfect!', 'You got it!', 'Well done!', 'Brilliant!'];
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        document.getElementById('mathSubmit').addEventListener('click', submitMathAnswer);
+        document.getElementById('mathAnswer').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') submitMathAnswer();
+            e.stopPropagation(); // Prevent player movement while typing
+        });
+        document.getElementById('mathAnswer').addEventListener('keyup', (e) => {
+            e.stopPropagation();
+        });
+
+        // ============================================================
+        // TIMERS & HUD
+        // ============================================================
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+
+        function updateTimers() {
+            if (mathActive) {
+                let elapsed = Date.now() - mathChallengeStart;
+                let remaining = Math.max(0, MATH_DURATION - elapsed);
+                document.getElementById('mathTimeLeft').textContent = formatTime(remaining);
+                if (remaining <= 0) endMathChallenge();
+            } else {
+                let elapsed = Date.now() - mathTimerStart;
+                let remaining = Math.max(0, MATH_INTERVAL - elapsed);
+                document.getElementById('nextMath').textContent = formatTime(remaining);
+
+                // Show warning 30 seconds before
+                let warning = document.getElementById('mathWarning');
+                if (remaining <= 30000 && remaining > 0) {
+                    warning.style.display = 'block';
+                    warning.textContent = `Math Challenge in ${Math.ceil(remaining / 1000)}s!`;
+                } else {
+                    warning.style.display = 'none';
+                }
+
+                if (remaining <= 0) startMathChallenge();
+            }
+        }
+
+        function formatTime(ms) {
+            let totalSec = Math.ceil(ms / 1000);
+            let min = Math.floor(totalSec / 60);
+            let sec = totalSec % 60;
+            return `${min}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        // ============================================================
+        // GAME LOOP
+        // ============================================================
+        function gameLoop() {
+            if (!mathActive) {
+                updatePlayer();
+            }
+            render();
+            updateTimers();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- Init ---
+        resize();
+        window.addEventListener('resize', resize);
+        generateWorld();
+        buildHotbar();
+        updateScore();
+        mathTimerStart = Date.now();
+        gameLoop();
+    </script>
+</body>
+</html>
