@@ -16,14 +16,20 @@
 
         /* Touch Controls */
         #touch-controls { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; z-index: 15; pointer-events: none; }
-        .touch-btn { position: fixed; pointer-events: all; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-family: 'Courier New', monospace; opacity: 0.5; z-index: 16; }
-        #joystick-zone { position: fixed; bottom: 20px; left: 20px; width: 140px; height: 140px; pointer-events: all; z-index: 16; }
-        #joystick-base { width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3); position: absolute; }
-        #joystick-thumb { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.4); position: absolute; top: 45px; left: 45px; }
-        #btn-jump { bottom: 40px; right: 30px; width: 70px; height: 70px; background: rgba(100,200,100,0.4); border: 2px solid rgba(100,200,100,0.6); color: #fff; font-size: 14px; }
-        #btn-break { bottom: 130px; right: 110px; width: 60px; height: 60px; background: rgba(200,100,100,0.4); border: 2px solid rgba(200,100,100,0.6); color: #fff; font-size: 11px; }
-        #btn-place { bottom: 130px; right: 30px; width: 60px; height: 60px; background: rgba(100,100,200,0.4); border: 2px solid rgba(100,100,200,0.6); color: #fff; font-size: 11px; }
-        #btn-inv { bottom: 40px; right: 110px; width: 60px; height: 60px; background: rgba(200,200,100,0.4); border: 2px solid rgba(200,200,100,0.6); color: #fff; font-size: 10px; }
+        .touch-btn { position: fixed; pointer-events: all; display: flex; align-items: center; justify-content: center; font-weight: bold; font-family: 'Courier New', monospace; opacity: 0.6; z-index: 16; }
+        /* Square movement pad */
+        #pad-zone { position: fixed; bottom: 30px; left: 20px; width: 140px; height: 140px; pointer-events: all; z-index: 16; }
+        #pad-base { width: 140px; height: 140px; border-radius: 8px; background: rgba(255,255,255,0.12); border: 3px solid rgba(255,255,255,0.35); position: absolute; }
+        #pad-thumb { width: 50px; height: 50px; border-radius: 6px; background: rgba(255,255,255,0.45); border: 2px solid rgba(255,255,255,0.6); position: absolute; top: 45px; left: 45px; }
+        /* Up/Down arrow buttons on right */
+        #btn-up { bottom: 140px; right: 35px; width: 75px; height: 75px; border-radius: 8px; background: rgba(100,200,100,0.35); border: 3px solid rgba(100,200,100,0.6); color: #fff; font-size: 32px; }
+        #btn-down { bottom: 50px; right: 35px; width: 75px; height: 75px; border-radius: 8px; background: rgba(100,200,100,0.35); border: 3px solid rgba(100,200,100,0.6); color: #fff; font-size: 32px; }
+        /* Action buttons */
+        #btn-break { bottom: 140px; right: 130px; width: 60px; height: 60px; border-radius: 8px; background: rgba(200,100,100,0.4); border: 2px solid rgba(200,100,100,0.6); color: #fff; font-size: 11px; }
+        #btn-place { bottom: 50px; right: 130px; width: 60px; height: 60px; border-radius: 8px; background: rgba(100,100,200,0.4); border: 2px solid rgba(100,100,200,0.6); color: #fff; font-size: 11px; }
+        #btn-inv { top: 20px; right: 20px; width: 50px; height: 50px; border-radius: 8px; background: rgba(200,200,100,0.4); border: 2px solid rgba(200,200,100,0.6); color: #fff; font-size: 10px; }
+        /* Flying indicator */
+        #fly-indicator { display: none; position: fixed; top: 55px; left: 50%; transform: translateX(-50%); background: rgba(100,200,255,0.7); color: #fff; padding: 4px 14px; border-radius: 12px; font-size: 13px; font-family: 'Courier New', monospace; z-index: 17; }
 
         /* Inventory overlay */
         #inventory { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(20,20,20,0.95); border: 3px solid #888; border-radius: 4px; padding: 12px; z-index: 60; max-height: 80vh; overflow-y: auto; width: 90%; max-width: 540px; }
@@ -62,15 +68,17 @@
     </div>
     <canvas id="gameCanvas"></canvas>
     <div id="touch-controls">
-        <div id="joystick-zone">
-            <div id="joystick-base"></div>
-            <div id="joystick-thumb"></div>
+        <div id="pad-zone">
+            <div id="pad-base"></div>
+            <div id="pad-thumb"></div>
         </div>
-        <div id="btn-jump" class="touch-btn">JUMP</div>
+        <div id="btn-up" class="touch-btn">&#9650;</div>
+        <div id="btn-down" class="touch-btn">&#9660;</div>
         <div id="btn-break" class="touch-btn">BREAK</div>
         <div id="btn-place" class="touch-btn">PLACE</div>
         <div id="btn-inv" class="touch-btn">INV</div>
     </div>
+    <div id="fly-indicator">FLYING</div>
     <div id="inventory"><button id="inv-close">&times;</button></div>
     <div id="mathWarning"></div>
     <div id="mathOverlay">
@@ -346,7 +354,7 @@
         x: 0, y: 0, w: TILE * 0.8, h: TILE * 1.8,
         vx: 0, vy: 0, onGround: false, selectedSlot: 0,
         health: 20, maxHealth: 20, hunger: 20, xp: 0, xpLevel: 0,
-        walkFrame: 0, facing: 1, fallStart: 0
+        walkFrame: 0, facing: 1, fallStart: 0, flying: false
     };
 
     // --- State ---
@@ -878,28 +886,41 @@
         let moveLeft = keys['ArrowLeft'] || keys['a'] || keys['A'] || touchMove.x < -0.3;
         let moveRight = keys['ArrowRight'] || keys['d'] || keys['D'] || touchMove.x > 0.3;
         let wantJump = keys['ArrowUp'] || keys['w'] || keys['W'] || keys[' '] || touchJump;
+        let wantDown = touchDown;
 
         if (moveLeft) { player.vx = -MOVE_SPEED; player.facing = -1; }
         else if (moveRight) { player.vx = MOVE_SPEED; player.facing = 1; }
         else player.vx = 0;
 
-        if (wantJump && player.onGround) {
-            player.vy = JUMP_FORCE;
-            player.onGround = false;
+        if (player.flying) {
+            // Flying mode: up arrow goes up, down arrow goes down, no gravity
+            if (wantJump) player.vy = -MOVE_SPEED;
+            else if (wantDown) player.vy = MOVE_SPEED;
+            else player.vy = 0;
+            // Also allow pad vertical movement while flying
+            if (touchMove.y < -0.3) player.vy = -MOVE_SPEED;
+            else if (touchMove.y > 0.3) player.vy = MOVE_SPEED;
+            player.fallStart = 0; // Never accumulate fall damage while flying
+        } else {
+            // Normal mode
+            if (wantJump && player.onGround) {
+                player.vy = JUMP_FORCE;
+                player.onGround = false;
+            }
+
+            // Gravity
+            player.vy += GRAVITY;
+            if (player.vy > 15) player.vy = 15;
+
+            // Track falling for fall damage
+            if (!player.onGround && player.vy > 0 && player.fallStart === 0) {
+                player.fallStart = player.y;
+            }
         }
 
         // Walk animation
         if (Math.abs(player.vx) > 0.5) player.walkFrame++;
         else player.walkFrame = 0;
-
-        // Gravity
-        player.vy += GRAVITY;
-        if (player.vy > 15) player.vy = 15;
-
-        // Track falling for fall damage
-        if (!player.onGround && player.vy > 0 && player.fallStart === 0) {
-            player.fallStart = player.y;
-        }
 
         // Horizontal collision
         let nx = player.x + player.vx;
@@ -909,11 +930,11 @@
         let ny = player.y + player.vy;
         if (!checkCollision(player.x, ny, player.w, player.h)) {
             player.y = ny;
-            player.onGround = false;
+            if (!player.flying) player.onGround = false;
         } else {
-            if (player.vy > 0) {
+            if (player.vy > 0 && !player.flying) {
                 player.onGround = true;
-                // Fall damage
+                // Fall damage only if not flying
                 if (player.fallStart > 0) {
                     let fallDist = (player.y - player.fallStart) / TILE;
                     if (fallDist > 4) {
@@ -928,6 +949,7 @@
 
         // World bounds
         player.x = Math.max(0, Math.min(player.x, (WORLD_W - 1) * TILE));
+        if (player.flying) player.y = Math.max(0, player.y);
 
         // Hunger slowly decreases
         if (frameCount % 600 === 0 && player.hunger > 0) player.hunger--;
@@ -1051,33 +1073,40 @@
     // ================================================================
     let touchMove = { x: 0, y: 0 };
     let touchJump = false;
-    let joystickTouch = null;
-    let joystickCenter = { x: 90, y: 0 };
+    let touchDown = false;
+    let padTouch = null;
+    let padCenter = { x: 90, y: 0 };
+    let lastUpTap = 0;
+    let lastDownTap = 0;
+    const DOUBLE_TAP_MS = 400;
 
     function setupTouch() {
         isTouchDevice = true;
         document.getElementById('touch-controls').style.display = 'block';
-        joystickCenter.y = window.innerHeight - 90;
+        padCenter.y = window.innerHeight - 100;
 
-        let jzone = document.getElementById('joystick-zone');
-        let thumb = document.getElementById('joystick-thumb');
+        let pzone = document.getElementById('pad-zone');
+        let thumb = document.getElementById('pad-thumb');
 
-        jzone.addEventListener('touchstart', e => {
+        // Square pad - drag the small square to move
+        pzone.addEventListener('touchstart', e => {
             e.preventDefault();
             let t = e.changedTouches[0];
-            joystickTouch = t.identifier;
-            joystickCenter = { x: t.clientX, y: t.clientY };
+            padTouch = t.identifier;
+            padCenter = { x: pzone.getBoundingClientRect().left + 70, y: pzone.getBoundingClientRect().top + 70 };
         }, { passive: false });
 
-        jzone.addEventListener('touchmove', e => {
+        pzone.addEventListener('touchmove', e => {
             e.preventDefault();
             for (let t of e.changedTouches) {
-                if (t.identifier === joystickTouch) {
-                    let dx = t.clientX - joystickCenter.x;
-                    let dy = t.clientY - joystickCenter.y;
-                    let dist = Math.sqrt(dx*dx + dy*dy);
-                    let maxDist = 50;
-                    if (dist > maxDist) { dx = dx/dist*maxDist; dy = dy/dist*maxDist; }
+                if (t.identifier === padTouch) {
+                    let rect = pzone.getBoundingClientRect();
+                    let cx = rect.left + 70, cy = rect.top + 70;
+                    let dx = t.clientX - cx;
+                    let dy = t.clientY - cy;
+                    let maxDist = 45;
+                    if (Math.abs(dx) > maxDist) dx = Math.sign(dx) * maxDist;
+                    if (Math.abs(dy) > maxDist) dy = Math.sign(dy) * maxDist;
                     touchMove.x = dx / maxDist;
                     touchMove.y = dy / maxDist;
                     thumb.style.left = (45 + dx) + 'px';
@@ -1086,10 +1115,10 @@
             }
         }, { passive: false });
 
-        jzone.addEventListener('touchend', e => {
+        pzone.addEventListener('touchend', e => {
             for (let t of e.changedTouches) {
-                if (t.identifier === joystickTouch) {
-                    joystickTouch = null;
+                if (t.identifier === padTouch) {
+                    padTouch = null;
                     touchMove = { x: 0, y: 0 };
                     thumb.style.left = '45px';
                     thumb.style.top = '45px';
@@ -1097,10 +1126,40 @@
             }
         });
 
-        // Jump button
-        let jumpBtn = document.getElementById('btn-jump');
-        jumpBtn.addEventListener('touchstart', e => { e.preventDefault(); touchJump = true; }, { passive: false });
-        jumpBtn.addEventListener('touchend', e => { touchJump = false; });
+        // Up arrow - tap to jump, double-tap to fly
+        let upBtn = document.getElementById('btn-up');
+        upBtn.addEventListener('touchstart', e => {
+            e.preventDefault();
+            let now = Date.now();
+            if (now - lastUpTap < DOUBLE_TAP_MS) {
+                // Double tap - toggle flying ON
+                player.flying = true;
+                document.getElementById('fly-indicator').style.display = 'block';
+                lastUpTap = 0;
+            } else {
+                lastUpTap = now;
+                touchJump = true;
+            }
+        }, { passive: false });
+        upBtn.addEventListener('touchend', e => { touchJump = false; });
+
+        // Down arrow - tap to go down (when flying), double-tap to stop flying
+        let downBtn = document.getElementById('btn-down');
+        downBtn.addEventListener('touchstart', e => {
+            e.preventDefault();
+            let now = Date.now();
+            if (now - lastDownTap < DOUBLE_TAP_MS) {
+                // Double tap - stop flying, land safely
+                player.flying = false;
+                player.fallStart = 0; // Reset fall tracking so no fall damage
+                document.getElementById('fly-indicator').style.display = 'none';
+                lastDownTap = 0;
+            } else {
+                lastDownTap = now;
+                touchDown = true;
+            }
+        }, { passive: false });
+        downBtn.addEventListener('touchend', e => { touchDown = false; });
 
         // Break button
         let breakBtn = document.getElementById('btn-break');
@@ -1132,7 +1191,6 @@
         // Canvas touch for looking
         canvas.addEventListener('touchmove', e => {
             e.preventDefault();
-            // Update mouse position for block highlighting
             if (e.touches.length > 0) {
                 mouseX = e.touches[0].clientX;
                 mouseY = e.touches[0].clientY;
